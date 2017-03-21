@@ -1,0 +1,234 @@
+% ****** Start of file apssamp.tex ******
+%
+%   This file is part of the APS files in the REVTeX 4.1 distribution.
+%   Version 4.1r of REVTeX, August 2010
+%
+%   Copyright (c) 2009, 2010 The American Physical Society.
+%
+%   See the REVTeX 4 README file for restrictions and more information.
+%
+% TeX'ing this file requires that you have AMS-LaTeX 2.0 installed
+% as well as the rest of the prerequisites for REVTeX 4.1
+%
+% See the REVTeX 4 README file
+% It also requires running BibTeX. The commands are as follows:
+%
+%  1)  latex apssamp.tex
+%  2)  bibtex apssamp
+%  3)  latex apssamp.tex
+%  4)  latex apssamp.tex
+%
+\documentclass[%
+ reprint,
+%superscriptaddress,
+%groupedaddress,
+%unsortedaddress,
+%runinaddress,
+%frontmatterverbose, 
+%preprint,
+%showpacs,preprintnumbers,
+%nofootinbib,
+%nobibnotes,
+%bibnotes,
+ amsmath,amssymb,
+ aps,
+%pra,
+%prb,
+%rmp,
+%prstab,
+%prstper,
+%floatfix,
+]{revtex4-1}
+
+\usepackage{graphicx}% Include figure files
+\usepackage{dcolumn}% Align table columns on decimal point
+\usepackage{bm}% bold math
+%\usepackage{hyperref}% add hypertext capabilities
+%\usepackage[mathlines]{lineno}% Enable numbering of text and display math
+%\linenumbers\relax % Commence numbering lines
+
+%\usepackage[showframe,%Uncomment any one of the following lines to test 
+%%scale=0.7, marginratio={1:1, 2:3}, ignoreall,% default settings
+%%text={7in,10in},centering,
+%%margin=1.5in,
+%%total={6.5in,8.75in}, top=1.2in, left=0.9in, includefoot,
+%%height=10in,a5paper,hmargin={3cm,0.8in},
+%]{geometry}
+
+\begin{document}
+
+\preprint{APS/123-QED}
+
+\title{Percolaci\'on de nodos en redes cuadradas 2d}% Force line breaks with \\
+%\thanks{A footnote to the article title}%
+
+\author{A.~Einstein}
+ %\altaffiliation[Also at ]{}%Lines break automatically or can be forced with \\
+\affiliation{%
+ Departamento de F\'\i sica, Facultad de Ciencias Exactas y Naturales, Universidad de Buenos Aires,\\
+ Pabell\'on I, Ciudad Universitaria, 1428 Buenos Aires, Argentina.
+}%
+\author{I.~Newton}%
+ \email{inewton@df.uba.ar}
+\affiliation{%
+ Departamento de F\'\i sica, Facultad de Ciencias Exactas y Naturales, Universidad de Buenos Aires,\\
+ Pabell\'on I, Ciudad Universitaria, 1428 Buenos Aires, Argentina. 
+}%
+
+%\collaboration{MUSO Collaboration}%\noaffiliation
+
+\date{\today}% It is always \today, today,
+             %  but any date may be explicitly specified
+
+\begin{abstract}
+A partir de estudios computacionales hemos determinado el comportamiento cr\'\i tico de una red de nodos bi-dimensional. Esta red percola siguiendo una transici\'on de fase de $2^\circ$ orden .... 
+
+
+\begin{description}
+%\item[Usage]
+%Secondary publications and information retrieval purposes.
+\item[PACS numbers]
+45.70.Vn, 89.65.Lm
+%\item[Structure]
+%You may use the \texttt{description} environment to structure your abstract;
+%use the optional argument of the \verb+\item+ command to give the category of each item. 
+\end{description}
+\end{abstract}
+
+\pacs{45.70.Vn, 89.65.Lm}% PACS, the Physics and Astronomy
+                             % Classification Scheme.
+%\keywords{Suggested keywords}%Use showkeys class option if keyword
+                              %display desired
+\maketitle
+
+%\tableofcontents
+
+\section{\label{intro}Introducci\'on}
+
+Los primeros estudios en percolaci\'on se realizaron....
+
+
+\section{\label{theory}El modelo}
+
+
+
+\subsection{\label{transition}Transici\'on de fase}
+
+Cuando de var\'\i a la probabilidad de ocupaci\'on de los nodos de la red, se observa que ...
+
+\subsection{\label{critical}Leyes de potencia y exponentes cr\'\i ticos}
+
+La Tabla~\ref{table_1} resume las principales leyes de potencia obtenidas en la literatura para redes percolantes...
+
+\begin{table}[h]
+\caption{\label{table_1}%
+Valores te\'oricos hallados en la literatura.
+}
+\begin{ruledtabular}
+\begin{tabular}{lll}
+%\hline
+%\hline
+\\[-5pt]
+ S\'\i mbolo     & Ley                        & Valor                          \\
+\hline
+$d$             &   ---                         & $d=2$                        \\
+$D$             & $M\sim L^{D}$                 & $D=91/48$                    \\
+$\nu$           & $\xi\sim|p-p_c|^{-\nu}$       & $\nu=4/3$                    \\
+$\tau$          & $n(p_c)\sim s^{-\tau}$        & $\tau=1+d/D$                 \\
+$\sigma$        & $z=s^\sigma(p-p_c)$           & $\sigma=(\nu D)^{-1}$        \\
+$\alpha$        & $m_0(p)\sim|p-p_c|^{2-\alpha}$& $\alpha=2-(\tau-1)/\sigma$   \\
+$\beta$         & $m_1(p)\sim(p-p_c)^\beta$     & $\beta=\nu(d-D)$             \\
+$\gamma$        & $m_2(p)\sim|p-p_c|^{-\gamma}$ & $\gamma=(3-\tau)/\sigma$     \\
+%\hline
+\end{tabular}
+\end{ruledtabular}
+\end{table}
+
+Observamos que los valores obtenidos en la Ref.~\cite{Stauffer} presentan...
+
+
+
+\subsection{\label{scaling}Efectos de red finita}
+
+El comportamiento de las redes de tama\~no finito (redes cuadradas de lado $L$) se aparta de aquel esperado para sistemas infinitos. Esto se debe a que...
+
+
+\begin{equation}
+n_s(p)=q_0\,s^{-\tau}\,f(z)\ \ \ \ ,\ \ \ \ z=s^\sigma(p-p_c)\label{eqn_1}
+\end{equation}
+
+En la Ec.~(\ref{eqn_1}) ....
+
+\subsection{\label{renorm}Renormalizaci\'on}
+
+Es posible explotar a\'un m\'as el hecho de que cerca de la transici\'on de fase el sistema se muestra libre de escalas. Si se \emph{re-escala} el sistema, deben seguir siendo v\'alidas las leyes de potencia anteriores. Entonces, mediante un proceso de \emph{renormalizaci\'on} observaremos que...
+
+\section{\label{simulations}Simulaciones num\'ericas}
+
+Se estudiaron redes cuadradas de tama\~no $L=4, 16, 32, 64, 128$ por medio del algoritmo de Hoshen-Kopelman \cite{Kopelman}. 
+
+
+\begin{equation}
+M(L)=L^D\,m\bigg(\displaystyle\frac{L}{\xi}\bigg)\sim\left\{\begin{array}{lll}
+             L^D       & \textrm{si} & L<\xi \\
+             L^d       & \textrm{si} & L\gg\xi \\
+            \end{array}\right.\label{eqn_2}
+\end{equation}
+
+
+\section{\label{results}Resultados}
+
+\subsection{\label{p_c} Determinaci\'on de $p_c(\infty)$ y $\nu$, y $\tau$}
+
+Se usaron distintos m\'etodos para la determinaci\'on num\'erica del punto cr\'\i tico...(\emph{i.e.} b\'usqueda de $p_\mathrm{medio}$, b\'usqueda de $p_\mathrm{mediana}$, sintonizado de $n_s(p_c)$).
+
+\subsection{\label{D} Determinaci\'on de la dimensi\'on fractal $D$ }
+
+Seg\'un la Ec.~\ref{eqn_2} es posible hallar $D$ en el caso en que ....
+
+\subsection{\label{P} Obtenci\'on de $\beta$ a partir de la intensidad $P_\infty$}
+
+A partir de la informaci\'on en el gr\'afico de $P_\infty(p)$ podemos hallar $\beta$ ...
+
+\subsection{\label{S} Espectro de fragmentos y verficaci\'on de la hip\'otesis de \emph{scaling} }
+
+La hip\'otesis de \emph{scaling} se presenta en la Ec.~\ref{eqn_1} en donde se observa que para distintos valores de $s$ y $p-p_c$, el espectro de fragmentos debe colapsar en una \'unica curva $f(z)=n_s(p)/n_s(p_c)$, donde $z=s^\sigma(p-p_c)$.... 
+
+\begin{figure}[b]
+\begin{center}
+%\includegraphics[scale=0.62]{fig1} \\
+\caption{Distribuci\'on de fragmentos.... }\label{fig_1}
+\end{center}
+\end{figure}
+
+En la Fig.~\ref{fig_1} se observa que ... \\
+
+
+En consecuencia, verificamos la hip\'otesis de \emph{scaling} graficando $f(z)$  y determinando el punto $f_\mathrm{max}=f(z_\mathrm{max})$. Este valor se corresponde con una probabilidad $p_\mathrm{max}$ para un cada tama\~no $s$ fijo. La ley de potencia con exponente $\sigma$ ser\'a entonces
+
+ 
+\begin{equation}
+\ln(p_\mathrm{max}-p_c)=-\sigma\,\ln(s)+\ln(z_\mathrm{max})+C\label{eqn_3}
+\end{equation}
+
+
+\section{\label{R} Verificaci\'on de resultados por renormalizaci\'on}
+
+Podemos verificar, al menos de manera aproximada, los resulados del las secciones realizando un proceso de renormalzaci\'on de \emph{celda peque\~na}. Consideramos un porci\'on de red de lado $b=2$ y la llamamos un \emph{super-nodo}....
+
+\section{\label{conclusions}Conclusiones}
+
+La Tabla.... resume los resulatados obtenidos. El sistema ....
+
+
+\begin{acknowledgments}
+I. Newton agradece al CONICET por el soporte econ\'omico brindado a traves del subsidio XXX-1234-YYY. A. Einstein es becario doctoral del CONICET. 
+\end{acknowledgments}
+
+\appendix
+%\bibliography{apssamp}% Produces the bibliography via BibTeX.
+\bibliography{apspaper}% Produces the bibliography via BibTeX.
+
+\end{document}
+%
+% ****** End of file apssamp.tex ******
