@@ -23,8 +23,8 @@ int main(){
 	int x, y;
 	float r;
 	float p   = 0.5;
-	int alto  = 4;
-	int ancho = 4;
+	int alto  = 64;
+	int ancho = 64;
 	int max_cluster;
 	int lattice[alto][ancho];
 	int clusters[alto][ancho];
@@ -69,8 +69,10 @@ int main(){
 		//printf("Pcritica: %f\n", p);
 		pc[realizacion]	= p;
 	}
+	char str[80];
+	sprintf(str, "pc%dx%d.txt", alto, ancho);
     FILE *archivo;
-    archivo = fopen("pc4x4.txt","w");
+    archivo = fopen(str,"w");
 	float promedio = 0;
     for (realizacion = 0; realizacion < realizaciones; realizacion++) {
     	fprintf(archivo, "%f\n", pc[realizacion]);
