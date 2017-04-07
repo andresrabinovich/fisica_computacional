@@ -30,11 +30,22 @@ for(i in c("4x4", "8x8", "16x16", "32x32", "64x64", "128x128")){
 #ej1b
 for(i in c("4x4", "8x8", "16x16", "32x32", "64x64", "128x128")){
   datos <- read_delim(paste("~/fisica_computacional/percolacion/programacion/corridas/ej1b/", i, ".txt", sep=""), "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE)
+  datos[, -1] <- datos[, -1]/100
+  m     <- apply(datos[, -1], 1, mean)
+  s     <- apply(datos[, -1], 1, sd)
+  datos <- data.frame(x=datos[, 1], y=m, l=m-s, u=m+s)
+  plot_datos <- ggplot(datos) + geom_line(aes(y=y, x=X1)) +
+    geom_ribbon(aes(ymin=l, ymax=u, x=X1), alpha = 0.3, fill = "grey70")
+  
+  
   plot_datos <- ggplot(data=datos, aes(X1, X2)) + 
     geom_point(size = 0.1) + 
     #labs(title=paste("Histograma de Pc para 1000 realizaciones de una red cuadrada de ", i, sep="")) +
     labs(x="P", y="Fracción percolante") +
     theme_original()
+  
   print(plot_datos)
   print(datos$X1[min(which(datos$X2 >= 0.5))])
 }
+
+

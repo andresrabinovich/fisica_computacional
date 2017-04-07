@@ -142,7 +142,7 @@ int main(int argc, char **argv){
 		sprintf(str, "%f", p);
 		for(repeticion = 0; repeticion < repeticiones; repeticion++){
 			strcat(str, "\t");
-			sprintf(str2, "%f", (float)fraccion_percolante[particion][repeticion]/(float)repeticiones);
+			sprintf(str2, "%f", (float)fraccion_percolante[particion][repeticion]/(float)realizaciones);
 			strcat(str, str2);
 		}
 		strcat(str, "\n");
