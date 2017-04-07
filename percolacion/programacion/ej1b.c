@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 //############################
 //DECLARACION DE LAS FUNCIONES
@@ -25,13 +26,31 @@ int verificar_percolacion(int alto, int ancho, int clusters[alto][ancho]);
 //COMIENZO DEL PROGRAMA
 //#####################
 int main(int argc, char **argv){
-	//Seteamos la semilla aleatoria
+	//Seteamos la semilla aleatoria para generar al azar argv[2] semillas aleatorias, una para cada particiones de la red y obtener valores repetibles
 	srand(12345);
 	
-	//Declaramos las variables que vamos a usar
-	float pc[realizaciones];
+	//Traemos la cantidad de particiones (argv[2]) o 1000 por defecto
+	int particion, particiones;
+	if(argc == 3){
+		particiones = atoi(argv[2]);
+	}else{
+		particiones = 1000;
+	}
+	
+	//Generamos las realizaciones semillas aleatorias
+	int realizaciones = 1000;
+	int repeticiones  = 10;
+	int semillas[repeticiones][realizaciones];
+	int realizacion, repeticion;
+	for(realizacion = 0; realizacion < realizaciones; realizacion++){
+		for(repeticion = 0; repeticion < repeticiones; repeticion++){
+			semillas[repeticion][realizacion] = rand();	
+		}
+	}
+
+	//Declaramos las variables que vamos a usar. Vamos a hacer 10 repeticiones*1000 iteraciones de cada uno de los p
+	int fraccion_percolante[particiones][repeticiones];
 	int max_cluster;
-	int iteracion;
 	int x, y;
 	float r;
 	int alto, ancho;
@@ -40,94 +59,97 @@ int main(int argc, char **argv){
 	if(argc > 1){
 		alto  = atoi(argv[1]);
 	}else{
-		alto  = 16;
+		alto  = 4;
 	}
 	ancho = alto;
 	int lattice[alto][ancho];
 	int clusters[alto][ancho];
 
-	//Configuraciones para la probabilidad de ocupación inicial y la precisión buscada (la cantidad de iteraciones sobre una misma red)
-	float p = 0.5;
-	int precision = 20;
+	//Configuraciones para la probabilidad de ocupación inicial y la variacion en p
+	float p       = 0;	
+	float delta_p = (float)1/(float)(particiones-1);
+
 	printf("Percolando red cuadrada de %dx%d\n", alto, ancho);
 
 	//Medimos el tiempo que tarda el script en correr
 	clock_t begin = clock();
 
-	//Comenzamos a realizar la red
-	for(realizacion = 0; realizacion < realizaciones; realizacion++){
+	//Iteramos hasta p = 1
+	for(particion = 0; particion < particiones; particion++){
 
-		//Iteramos p+-1/2^(iteracion+1) hasta la precisión deseada
-		iteracion = 1;
-		while(iteracion <= precision){
+		for(repeticion = 0; repeticion < repeticiones; repeticion++){
+			//printf("Percolando red cuadrada de %dx%d con probabilidad de ocupación p: %f\n", alto, ancho, p);
+			fraccion_percolante[particion][repeticion] = 0;
+			//Comenzamos a realizar la red
+			for(realizacion = 0; realizacion < realizaciones; realizacion++){
 
-			//Seteamos la semilla aleatoria correspondiente a ésta realización
-			srand(semillas[realizacion]);
+				//Seteamos la semilla aleatoria correspondiente a ésta realización
+				srand(semillas[repeticion][realizacion]);
 
-			//Iniciamos la red (lattice) con todo en 0
-			inicializar_lattice(alto, ancho, lattice, 0);
+				//Iniciamos la red (lattice) con todo en 0
+				inicializar_lattice(alto, ancho, lattice, 0);
 
-			//Iniciamos la red que contiene a que cluster pertenece cada nodo y el valor del próximo cluster no usado (max_cluster) lo ponemos en 0
-			inicializar_lattice(alto, ancho, clusters, 0);
-			max_cluster = 0;
+				//Iniciamos la red que contiene a que cluster pertenece cada nodo y el valor del próximo cluster no usado (max_cluster) lo ponemos en 0
+				inicializar_lattice(alto, ancho, clusters, 0);
+				max_cluster = 0;
 
-			//Populamos la red por columna y en simultaneo usamos el algoritmo de Hoshen-Kopelman para detectar clusters
-			for(x = 0; x < ancho; x++){
-				for(y = 0; y < alto; y++){
-					r = (float)rand() / (float)RAND_MAX;
-					//Ponemos un 1 en la red con probabilidad p
-					if(r <= p){
-						lattice[y][x] = 1;
+				//Populamos la red por columna y en simultaneo usamos el algoritmo de Hoshen-Kopelman para detectar clusters
+				for(x = 0; x < ancho; x++){
+					for(y = 0; y < alto; y++){
+						r = (float)rand() / (float)RAND_MAX;
+						//Ponemos un 1 en la red con probabilidad p
+						if(r <= p){
+							lattice[y][x] = 1;
 			
-						//Algoritmo de Hoshen-Kopelman para detectar clusters. Se fija si el nodo de arriba suyo está poblado y pertenece a algún cluster. Si pertenece a algún cluster
-						//se pone a si mismo en ese cluster. Después se fija si a su lado izquierdo hay un nodo poblado perteneciente a un cluster distinto. Si pertenece a algún cluster distinto
-						//actualiza todos los elementos de ese cluster (función actualizar_clusters) distinto con el número de cluster correcto 
-						if (y > 0 && clusters[y-1][x] != 0){
-							clusters[y][x] = clusters[y-1][x];
-							if (x > 0 && clusters[y][x-1] != 0 && clusters[y][x-1] != clusters[y-1][x]){
-								actualizar_clusters(alto, ancho, clusters, clusters[y][x-1], clusters[y-1][x], x);
+							//Algoritmo de Hoshen-Kopelman para detectar clusters. Se fija si el nodo de arriba suyo está poblado y pertenece a algún cluster. Si pertenece a algún cluster
+							//se pone a si mismo en ese cluster. Después se fija si a su lado izquierdo hay un nodo poblado perteneciente a un cluster distinto. Si pertenece a algún cluster distinto
+							//actualiza todos los elementos de ese cluster (función actualizar_clusters) distinto con el número de cluster correcto 
+							if (y > 0 && clusters[y-1][x] != 0){
+								clusters[y][x] = clusters[y-1][x];
+								if (x > 0 && clusters[y][x-1] != 0 && clusters[y][x-1] != clusters[y-1][x]){
+									actualizar_clusters(alto, ancho, clusters, clusters[y][x-1], clusters[y-1][x], x);
+								}
+							}else if (x > 0 && clusters[y][x-1] != 0){
+								clusters[y][x] = clusters[y][x-1];
+							}else{
+								max_cluster    += 1;
+								clusters[y][x]  = max_cluster;
 							}
-						}else if (x > 0 && clusters[y][x-1] != 0){
-							clusters[y][x] = clusters[y][x-1];
-						}else{
-							max_cluster    += 1;
-							clusters[y][x]  = max_cluster;
-						}
 				
+						}
 					}
 				}
-			}
-			//Imrpime la red y los respectivos clusters para verificación
-			//imprimir_lattice(alto, ancho, lattice);
-			//imprimir_lattice(alto, ancho, clusters);
+				//Imprime la red y los respectivos clusters para verificación
+				//imprimir_lattice(alto, ancho, lattice);
+				//imprimir_lattice(alto, ancho, clusters);
 
-			//Se fija si hubo o no percolación y modifica p en función del resultado
-			if(verificar_percolacion(alto, ancho, clusters) == 1){
-				p = p - (1/pow(2, iteracion+1));		
-			}else{
-				p = p + (1/pow(2, iteracion+1));
+				//Se fija si hubo o no percolacion y lo agrega a la fraccion percolante
+				fraccion_percolante[particion][repeticion] += verificar_percolacion(alto, ancho, clusters);
 			}
-			iteracion++;
 		}
+		//printf("%d\n", particion);
 		//printf("Pcritica: %f\n", p);
-		//Guardamos el valor de p crítico de ésta realización 
-		pc[realizacion]	= p;
+		p = p + delta_p;
 	}
 
-	//Guardamos todas las pcriticas de todas las realizaciones en un archivo para su posterior análisis	
-	char str[80];
-	sprintf(str, "corridas/ej1a/pc%dx%d.txt", alto, ancho);
+	//Guardamos todas las fracciones de todas las particiones en un archivo para su posterior análisis	
+	char str[1024], str2[1024];
+	sprintf(str, "corridas/ej1b/%dx%d.txt", alto, ancho);
     FILE *archivo;
     archivo = fopen(str,"w");
-	float promedio = 0;
-    for (realizacion = 0; realizacion < realizaciones; realizacion++) {
-    	fprintf(archivo, "%f\n", pc[realizacion]);
-		promedio = promedio + pc[realizacion];
+	p = 0;
+    for (particion = 0; particion < particiones; particion++) {
+		sprintf(str, "%f", p);
+		for(repeticion = 0; repeticion < repeticiones; repeticion++){
+			strcat(str, "\t");
+			sprintf(str2, "%f", (float)fraccion_percolante[particion][repeticion]/(float)repeticiones);
+			strcat(str, str2);
+		}
+		strcat(str, "\n");
+   		fprintf(archivo, "%s", str);
+		p = p + delta_p;
     }
 	fclose(archivo);
-	
-	//Mostramos el promedio de las pcriticas
-	printf("Pcritica: %f\n", promedio/(float)realizaciones);
 	
 	//Mostramos el tiempo que tardó la corrida
 	clock_t end = clock();

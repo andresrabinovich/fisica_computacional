@@ -131,7 +131,7 @@ int main(int argc, char **argv){
 
 	//Guardamos todas las pcriticas de todas las realizaciones en un archivo para su posterior análisis	
 	char str[80];
-	sprintf(str, "corridas/ej1a/pc%dx%d.txt", alto, ancho);
+	sprintf(str, "corridas/ej1a/%dx%d.txt", alto, ancho);
     FILE *archivo;
     archivo = fopen(str,"w");
 	float promedio = 0;

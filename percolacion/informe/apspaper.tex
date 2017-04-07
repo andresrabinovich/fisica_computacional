@@ -38,11 +38,13 @@
 %prstab,
 %prstper,
 %floatfix,
-]{revtex4-1}
+spanish]{revtex4-1}
 
 \usepackage{graphicx}% Include figure files
 \usepackage{dcolumn}% Align table columns on decimal point
 \usepackage{bm}% bold math
+\usepackage{subcaption}
+\usepackage[utf8]{inputenc}
 %\usepackage{hyperref}% add hypertext capabilities
 %\usepackage[mathlines]{lineno}% Enable numbering of text and display math
 %\linenumbers\relax % Commence numbering lines
@@ -54,7 +56,7 @@
 %%total={6.5in,8.75in}, top=1.2in, left=0.9in, includefoot,
 %%height=10in,a5paper,hmargin={3cm,0.8in},
 %]{geometry}
-
+\graphicspath{ {imagenes/} }
 \begin{document}
 
 \preprint{APS/123-QED}
@@ -62,17 +64,11 @@
 \title{Percolaci\'on de nodos en redes cuadradas 2d}% Force line breaks with \\
 %\thanks{A footnote to the article title}%
 
-\author{A.~Einstein}
+\author{A.~Rabinovich}
  %\altaffiliation[Also at ]{}%Lines break automatically or can be forced with \\
 \affiliation{%
  Departamento de F\'\i sica, Facultad de Ciencias Exactas y Naturales, Universidad de Buenos Aires,\\
  Pabell\'on I, Ciudad Universitaria, 1428 Buenos Aires, Argentina.
-}%
-\author{I.~Newton}%
- \email{inewton@df.uba.ar}
-\affiliation{%
- Departamento de F\'\i sica, Facultad de Ciencias Exactas y Naturales, Universidad de Buenos Aires,\\
- Pabell\'on I, Ciudad Universitaria, 1428 Buenos Aires, Argentina. 
 }%
 
 %\collaboration{MUSO Collaboration}%\noaffiliation
@@ -182,6 +178,53 @@ M(L)=L^D\,m\bigg(\displaystyle\frac{L}{\xi}\bigg)\sim\left\{\begin{array}{lll}
 
 Se usaron distintos m\'etodos para la determinaci\'on num\'erica del punto cr\'\i tico...(\emph{i.e.} b\'usqueda de $p_\mathrm{medio}$, b\'usqueda de $p_\mathrm{mediana}$, sintonizado de $n_s(p_c)$).
 
+\begin{figure}[h]
+\begin{subfigure}{.25\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{ej1a/hist4x4}
+  \caption{Red cuadrada de 4x4: $\mu=0.5669$ $\sigma=0.1554$}
+  %\caption{Red cuadrada de 4x4: $P_c=0.5\pm0.2$}
+  \label{fig:1ahist}
+\end{subfigure}%
+\begin{subfigure}{.25\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{ej1a/hist8x8}
+  \caption{Red cuadrada de 8x8: $\mu=0.5779$ $\sigma=0.1018$}
+  %\caption{Red cuadrada de 8x8: $P_c=0.5\pm0.1$}
+  \label{fig:1ahist}
+\end{subfigure}
+\begin{subfigure}{.25\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{ej1a/hist16x16}
+  \caption{Red cuadrada de 16x16: $\mu=0.5876$ $\sigma=0.0620$}
+  %\caption{Red cuadrada de 16x16: $P_c=0.58\pm0.06$}  
+  \label{fig:1ahist}
+\end{subfigure}%
+\begin{subfigure}{.25\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{ej1a/hist32x32}
+  \caption{Red cuadrada de 32x32: $\mu=0.5932$ $\sigma=0.0390$}
+  %\caption{Red cuadrada de 32x32: $P_c=0.59\pm0.04$}  
+  \label{fig:1ahist}
+\end{subfigure}
+\begin{subfigure}{.25\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{ej1a/hist64x64}
+  \caption{Red cuadrada de 64x64: $\mu=0.5940$ $\sigma=0.0239$}
+  %\caption{Red cuadrada de 64x64: $P_c=0.59\pm0.02$}  
+  \label{fig:1ahist}
+\end{subfigure}%
+\begin{subfigure}{.25\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{ej1a/hist128x128}
+  \caption{Red cuadrada de 128x128: $\mu=0.5924$ $\sigma=0.0137$}
+  %\caption{Red cuadrada de 128x128: $P_c=0.59\pm0.01$}  
+  \label{fig:1ahist}
+\end{subfigure}
+\caption{Histogramas de probabilidades críticas en función del tamaño de la red cuadrada para 1000 realizaciones de la red.}
+\label{fig:histograma_red_cuadrada_1a}
+\end{figure}
+
 \subsection{\label{D} Determinaci\'on de la dimensi\'on fractal $D$ }
 
 Seg\'un la Ec.~\ref{eqn_2} es posible hallar $D$ en el caso en que ....
@@ -222,7 +265,7 @@ La Tabla.... resume los resulatados obtenidos. El sistema ....
 
 
 \begin{acknowledgments}
-I. Newton agradece al CONICET por el soporte econ\'omico brindado a traves del subsidio XXX-1234-YYY. A. Einstein es becario doctoral del CONICET. 
+A. Rabinovich es becario doctoral del CONICET. 
 \end{acknowledgments}
 
 \appendix
