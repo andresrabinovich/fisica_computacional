@@ -57,7 +57,7 @@ int main(int argc, char **argv){
 	}
 	
 	//Generamos las repeticiones semillas aleatorias
-	int repeticiones = 10;
+	int repeticiones = 1;
 	int semillas[repeticiones];
 	int repeticion;
 	for(repeticion = 0; repeticion < repeticiones; repeticion++){
