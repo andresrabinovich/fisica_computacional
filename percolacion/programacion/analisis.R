@@ -49,7 +49,21 @@ for(i in c("4x4", "8x8", "16x16", "32x32", "64x64", "128x128")){
 }
 
 #ej1d
-a<-cbind(c(1,2,3,7,11), log(c(3,2,2,1,1)))
-plot(a)
-abline(a=2.651163, b=-0.177326)
-abline(a = )
+for(i in c("4x4", "8x8", "16x16", "32x32", "64x64", "128x128")){
+  datos <- read_delim(paste("~/fisica_computacional/percolacion/programacion/corridas/ej1d/", i, ".txt", sep=""), "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE)
+  p<-apply(datos[, -1], 2, function(x){
+    min(which(x >= 0.5))
+  })
+  p<-c(t(datos[p, 1]))
+  print(mean(p))
+  print(sd(p))
+  #write.table(as.data.frame(datos), file = paste("~/fisica_computacional/percolacion/programacion/corridas/ej1b/a", i, ".txt", sep=""), sep = "\t", col.names = FALSE, row.names = FALSE)
+  m     <- apply(datos[, -1], 1, mean)
+  s     <- apply(datos[, -1], 1, sd)
+  datos <- data.frame(x=datos[, 1], y=m, l=m-2*s, u=m+2*s)
+  plot_datos <- ggplot(datos) + geom_line(aes(y=y, x=X1), colour = "black") +
+    geom_ribbon(aes(ymin=l, ymax=u, x=X1), alpha = 0.3, fill = "red") +
+    labs(x="p", y="Fracción percolante") +
+    theme_original()
+  print(plot_datos)
+}
