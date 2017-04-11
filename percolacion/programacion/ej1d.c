@@ -35,6 +35,7 @@ void inicializar_lattice(int alto, int ancho, int lattice[alto][ancho], int inic
 void actualizar_clusters(int alto, int ancho, int clusters[alto][ancho], int actual, int cambio, int x_max);
 int verificar_percolacion(int alto, int ancho, int clusters[alto][ancho]);
 s_puntos contar_clusters(int alto, int ancho, int max_cluster, int clusters[alto][ancho]);
+void media(s_puntos puntos, float mu[2]);
 
 //#####################
 //COMIENZO DEL PROGRAMA
@@ -143,6 +144,9 @@ int main(int argc, char **argv){
 			for(punto = 0; punto < puntos.cantidad_puntos; punto++){
 				printf("%f %f %f\n", puntos.puntos[punto].x, puntos.puntos[punto].y, log(puntos.puntos[punto].y));
 			}
+			float mu[2];
+			media(puntos, mu);
+			printf("%f %f\n", mu[0], mu[1]);
 			free(puntos.puntos);
 		}
 		//printf("%d\n", particion);
@@ -180,6 +184,20 @@ int main(int argc, char **argv){
 //#######################
 //DEFINICIÓN DE FUNCIONES
 //#######################
+
+//Función que cacula el valor medio de cada cordeenada de varios puntos por separado
+void media(s_puntos puntos, float mu[2]){
+	mu[0] = 0;
+	mu[1] = 0;
+	int i;
+	for(i = 0; i < puntos.cantidad_puntos; i++){
+		mu[0] = mu[0] + puntos.puntos[i].x;
+		mu[1] = mu[1] + puntos.puntos[i].y;
+	}
+	mu[0] = mu[0]/puntos.cantidad_puntos;
+	mu[1] = mu[1]/puntos.cantidad_puntos;
+	return;
+}
 
 //Función que cuenta la cantidad de clusters de determinado tamaño
 s_puntos contar_clusters(int alto, int ancho, int max_cluster, int clusters[alto][ancho]){

@@ -31,6 +31,13 @@ for(i in c("4x4", "8x8", "16x16", "32x32", "64x64", "128x128")){
 for(i in c("4x4", "8x8", "16x16", "32x32", "64x64", "128x128")){
   datos <- read_delim(paste("~/fisica_computacional/percolacion/programacion/corridas/ej1b/", i, ".txt", sep=""), "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE)
   datos[, -1] <- datos[, -1]/100
+  p<-apply(datos[, -1], 2, function(x){
+    min(which(x >= 0.5))
+  })
+  p<-c(t(datos[p, 1]))
+  print(mean(p))
+  print(sd(p))
+  #write.table(as.data.frame(datos), file = paste("~/fisica_computacional/percolacion/programacion/corridas/ej1b/a", i, ".txt", sep=""), sep = "\t", col.names = FALSE, row.names = FALSE)
   m     <- apply(datos[, -1], 1, mean)
   s     <- apply(datos[, -1], 1, sd)
   datos <- data.frame(x=datos[, 1], y=m, l=m-2*s, u=m+2*s)
@@ -38,9 +45,7 @@ for(i in c("4x4", "8x8", "16x16", "32x32", "64x64", "128x128")){
     geom_ribbon(aes(ymin=l, ymax=u, x=X1), alpha = 0.3, fill = "red") +
     labs(x="p", y="Fracción percolante") +
     theme_original()
-  
   print(plot_datos)
-  print(datos$X1[min(which(datos$X2 >= 0.5))])
 }
 
 
