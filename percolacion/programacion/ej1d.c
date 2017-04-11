@@ -3,7 +3,7 @@
 //y verifica la existencia de cluster percolante para obtener
 //la probabilidad critica pc de aparición del mismo.
 //Compilar con gcc ej1b.c -o ej1b -lm
-//Correr con ej1b Lado_de_la_red cantidad_de_realizaciones_de_la_red
+//Correr con ej1b Lado_de_la_red cantidad_de_repeticiones_de_la_red
 //###########################################################################
 
 #include <time.h>
@@ -36,6 +36,10 @@ void actualizar_clusters(int alto, int ancho, int clusters[alto][ancho], int act
 int verificar_percolacion(int alto, int ancho, int clusters[alto][ancho]);
 s_puntos contar_clusters(int alto, int ancho, int max_cluster, int clusters[alto][ancho]);
 void media(s_puntos puntos, float mu[2]);
+float sumar_vector(float s[], int tamano);
+float *ajuste_lineal(s_puntos puntos);
+float chi_cuadrado(s_puntos puntos, float b[2]);
+float r_cuadrado(s_puntos puntos, float b[2]);
 
 //#####################
 //COMIENZO DEL PROGRAMA
@@ -52,16 +56,19 @@ int main(int argc, char **argv){
 		particiones = 1000;
 	}
 	
-	//Generamos las realizaciones semillas aleatorias
-	int realizaciones = 1000;
-	int semillas[realizaciones];
-	int realizacion;
-	for(realizacion = 0; realizacion < realizaciones; realizacion++){
-		semillas[realizacion] = rand();	
+	//Generamos las repeticiones semillas aleatorias
+	int repeticiones = 10;
+	int semillas[particiones][repeticiones];
+	int repeticion;
+	for(particion = 0; particion < particiones; particion++){
+		for(repeticion = 0; repeticion < repeticiones; repeticion++){
+			semillas[particion][repeticion] = rand();	
+		}
 	}
 
-	//Declaramos las variables que vamos a usar. Vamos a hacer 1000 iteraciones de cada uno de los p
-	int fraccion_percolante[particiones];
+	//Declaramos las variables que vamos a usar. Vamos a hacer 10 iteraciones de cada uno de los p
+	float chi2[particiones][repeticiones];
+	float r2[particiones][repeticiones];
 	int max_cluster;
 	int x, y, i;
 	float r;
@@ -80,29 +87,26 @@ int main(int argc, char **argv){
 	//Configuraciones para la probabilidad de ocupación inicial y la variacion en p
 	float p_inicial = 0.56;
 	float p_final   = 0.6; 	
+
+	//Declaramos otras variables del programa
 	float p         = p_inicial;	
 	float delta_p   = (p_final-p_inicial)/(float)(particiones-1);
+	float *b; 
 
+	//Empezamos a percolar
 	printf("Percolando red cuadrada de %dx%d\n", alto, ancho);
 
 	//Medimos el tiempo que tarda el script en correr
 	clock_t begin = clock();
 
 	//Iteramos hasta p = 1
-	//for(particion = 0; particion < particiones; particion++){
+	for(particion = 0; particion < particiones; particion++){
 
 		//Comenzamos a realizar la red
-		//for(realizacion = 0; realizacion < realizaciones; realizacion++){
-		for(realizacion = 0; realizacion < 1; realizacion++){
+		for(repeticion = 0; repeticion < repeticiones; repeticion++){
 
 			//Seteamos la semilla aleatoria correspondiente a ésta realización
-			srand(semillas[realizacion]);
-
-			//Iniciamos la red (lattice) con todo en 0
-			//inicializar_lattice(alto, ancho, lattice, 0);
-
-			//Iniciamos la red que contiene a que cluster pertenece cada nodo y el valor del próximo cluster no usado (max_cluster) lo ponemos en 0
-			//inicializar_lattice(alto, ancho, clusters, 0);
+			srand(semillas[particion][repeticion]);
 			max_cluster = 0;
 
 			//Populamos la red por columna y en simultaneo usamos el algoritmo de Hoshen-Kopelman para detectar clusters
@@ -134,37 +138,40 @@ int main(int argc, char **argv){
 					}
 				}
 			}
-			//Imprime la red y los respectivos clusters para verificación
-			//imprimir_lattice(alto, ancho, lattice);
-			//imprimir_lattice(alto, ancho, clusters);
-			//Cuenta la cantidad de clusters que hay de cada tamaño
-			s_puntos puntos = contar_clusters(alto, ancho, max_cluster, clusters);
-			int punto;			
-			//printf("%d\n",  puntos.cantidad_puntos);
-			for(punto = 0; punto < puntos.cantidad_puntos; punto++){
-				printf("%f %f %f\n", puntos.puntos[punto].x, puntos.puntos[punto].y, log(puntos.puntos[punto].y));
+			//Cuenta la cantidad de clusters ns que hay de cada tamaño
+			s_puntos clusters_por_tamano = contar_clusters(alto, ancho, max_cluster, clusters);
+			
+			//Toma el logaritmo de ns porque log(ns)~s para p~pc
+			for(i = 0; i < clusters_por_tamano.cantidad_puntos; i++){
+				clusters_por_tamano.puntos[i].y = log(clusters_por_tamano.puntos[i].y);
 			}
-			float mu[2];
-			media(puntos, mu);
-			printf("%f %f\n", mu[0], mu[1]);
-			free(puntos.puntos);
+
+			//Ajusta log(ns) con un ajuste lineal y calcula el chi2 y el r2
+			b = ajuste_lineal(clusters_por_tamano);
+			chi2[particion][repeticion] = chi_cuadrado(clusters_por_tamano, b);
+			r2[particion][repeticion] = r_cuadrado(clusters_por_tamano, b);
+			//printf("chi2: %f r2: %f\n",chi2[particion][repeticion], r2[particion][repeticion]);
+			free(clusters_por_tamano.puntos);
+			free(b);
 		}
-		//printf("%d\n", particion);
+		printf("%d\n", particion);
 		//printf("Pcritica: %f\n", p);
 		p = p + delta_p;
-	//}
-	/*
+	}
 	//Guardamos todas las fracciones de todas las particiones en un archivo para su posterior análisis	
 	char str[1024], str2[1024];
-	sprintf(str, "corridas/ej1b/%dx%d.txt", alto, ancho);
+	sprintf(str, "corridas/ej1d/%dx%d.txt", alto, ancho);
     FILE *archivo;
     archivo = fopen(str,"w");
-	p = 0;
+	p = p_inicial;
     for (particion = 0; particion < particiones; particion++) {
 		sprintf(str, "%f", p);
 		for(repeticion = 0; repeticion < repeticiones; repeticion++){
 			strcat(str, "\t");
-			sprintf(str2, "%f", (float)fraccion_percolante[particion][repeticion]/(float)realizaciones);
+			sprintf(str2, "%f", chi2[particion][repeticion]);
+			strcat(str, str2);
+			strcat(str, "\t");
+			sprintf(str2, "%f", r2[particion][repeticion]);
 			strcat(str, str2);
 		}
 		strcat(str, "\n");
@@ -172,7 +179,7 @@ int main(int argc, char **argv){
 		p = p + delta_p;
     }
 	fclose(archivo);
-	*/
+
 	//Mostramos el tiempo que tardó la corrida
 	clock_t end = clock();
 	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
@@ -184,6 +191,76 @@ int main(int argc, char **argv){
 //#######################
 //DEFINICIÓN DE FUNCIONES
 //#######################
+
+//Calcula el chi cuadrado para el ajuste lineal
+float r_cuadrado(s_puntos puntos, float b[2]){
+	float c_p[puntos.cantidad_puntos];
+	float c_y[puntos.cantidad_puntos];
+	float c_yy[puntos.cantidad_puntos];
+	float s_y[puntos.cantidad_puntos];
+	float s_yy[puntos.cantidad_puntos];
+	int i;
+	float mu[2];
+	media(puntos, mu);
+	for(i = 0; i < puntos.cantidad_puntos; i++){
+		c_p[i] = b[1]*puntos.puntos[i].x + b[0];
+		c_y[i] = puntos.puntos[i].y -c_p[i];
+		c_yy[i] = c_y[i]*c_y[i];
+		s_y[i] = puntos.puntos[i].y - mu[1];
+		s_yy[i] = s_y[i]*s_y[i];
+	}
+	float sse = sumar_vector(c_yy, puntos.cantidad_puntos);
+	float sst = sumar_vector(s_yy, puntos.cantidad_puntos);
+	//printf("%f %f\n", sse, sst);
+	float ssr = sst-sse;
+	if(sst == 0) return(10000000);
+	return(ssr/sst);
+}
+
+//Calcula el chi cuadrado para el ajuste lineal
+float chi_cuadrado(s_puntos puntos, float b[2]){
+	float c_p[puntos.cantidad_puntos];
+	float c_y[puntos.cantidad_puntos];
+	float c_yy[puntos.cantidad_puntos];
+	float chi[puntos.cantidad_puntos];
+	int i;
+	for(i = 0; i < puntos.cantidad_puntos; i++){
+		c_p[i] = b[1]*puntos.puntos[i].x + b[0];
+		c_y[i] = puntos.puntos[i].y -c_p[i];
+		c_yy[i] = c_y[i]*c_y[i];
+		if(c_p[i] == 0) return(10000000);
+		chi[i] = c_yy[i]/c_p[i];	
+	}
+	return(sumar_vector(chi, puntos.cantidad_puntos));
+}
+
+//Función que realiza un ajuste lineal a los puntos y devuelve los coeficientes del ajuste.
+float *ajuste_lineal(s_puntos puntos){
+	float mu[2];
+	float *b = malloc(sizeof(float)*2);	
+	int i;
+	media(puntos, mu);
+	float s_x[puntos.cantidad_puntos], s_y[puntos.cantidad_puntos], s_xx[puntos.cantidad_puntos], s_xy[puntos.cantidad_puntos];
+	for(i = 0; i < puntos.cantidad_puntos; i++){
+		s_x[i] = puntos.puntos[i].x - mu[0];
+		s_y[i] = puntos.puntos[i].y - mu[1];
+		s_xx[i] = s_x[i]*s_x[i];
+		s_xy[i] = s_x[i]*s_y[i];
+	}
+	b[1] = sumar_vector(s_xy, puntos.cantidad_puntos)/sumar_vector(s_xx, puntos.cantidad_puntos);
+	b[0] = mu[1]-b[1]*mu[0];
+	return(b);
+}
+
+//Función que devuelve la suma de todos los elementos de un vector
+float sumar_vector(float s[], int tamano){
+	int i;
+	float suma = 0;
+	for(i = 0; i < tamano; i++){
+		suma = suma + s[i];
+	}
+	return(suma);
+}
 
 //Función que cacula el valor medio de cada cordeenada de varios puntos por separado
 void media(s_puntos puntos, float mu[2]){

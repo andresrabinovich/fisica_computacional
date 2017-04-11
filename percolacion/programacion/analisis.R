@@ -48,4 +48,8 @@ for(i in c("4x4", "8x8", "16x16", "32x32", "64x64", "128x128")){
   print(plot_datos)
 }
 
-
+#ej1d
+a<-cbind(c(1,2,3,7,11), log(c(3,2,2,1,1)))
+plot(a)
+abline(a=2.651163, b=-0.177326)
+abline(a = )
