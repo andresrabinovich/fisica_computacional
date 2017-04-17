@@ -34,7 +34,7 @@ void a_lattice(int alto, int ancho, int lattice[alto][ancho]);
 void inicializar_lattice(int alto, int ancho, int lattice[alto][ancho], int inicializador);
 void actualizar_clusters(int alto, int ancho, int clusters[alto][ancho], int actual, int cambio, int x_max);
 int verificar_percolacion(int alto, int ancho, int clusters[alto][ancho]);
-s_puntos contar_clusters(int alto, int ancho, int max_cluster, int clusters[alto][ancho]);
+void contar_clusters(int alto, int ancho, int max_cluster, int clusters[alto][ancho], int *clusters_por_tamano, int *cantidad_redes_cluster_por_tamano);
 void media(s_puntos puntos, float mu[2]);
 float sumar_vector(float s[], int tamano);
 float *ajuste_lineal(s_puntos puntos);
@@ -53,11 +53,11 @@ int main(int argc, char **argv){
 	if(argc == 3){
 		particiones = atoi(argv[2]);
 	}else{
-		particiones = 400;
+		particiones = 1;
 	}
 	
 	//Generamos las repeticiones semillas aleatorias
-	int repeticiones = 1000;
+	int repeticiones = 30;
 	int semillas[repeticiones];
 	int repeticion;
 	for(repeticion = 0; repeticion < repeticiones; repeticion++){
@@ -65,8 +65,8 @@ int main(int argc, char **argv){
 	}
 
 	//Declaramos las variables que vamos a usar. Vamos a hacer #repeticiones iteraciones de cada uno de los p
-	float chi2[particiones][repeticiones];
-	float r2[particiones][repeticiones];
+	//float chi2[particiones][repeticiones];
+	//float r2[particiones][repeticiones];
 	int max_cluster;
 	int x, y, i;
 	float r;
@@ -83,14 +83,21 @@ int main(int argc, char **argv){
 	int clusters[alto][ancho];
 
 	//Configuraciones para la probabilidad de ocupación inicial y la variacion en p
-	float p_inicial = 0.59;
+	float p_inicial = 0.56;
 	float p_final   = 0.6; 	
 
 	//Declaramos otras variables del programa
 	float p         = p_inicial;
 	float delta_p   = (p_final-p_inicial)/(float)(particiones-1);
 	float *b; 
-
+    int clusters_por_tamano[alto*ancho];
+    int cantidad_redes_cluster_por_tamano[alto*ancho];
+    int cantidad_puntos = alto*ancho;
+    /*
+    s_puntos clusters_por_tamano;
+    clusters_por_tamano.puntos = malloc(sizeof(puntos)*alto*ancho);
+    clusters_por_tamano.cantidad_puntos = alto*ancho;
+    */
 	//Empezamos a percolar
 	printf("Percolando red cuadrada de %dx%d\n", alto, ancho);
 
@@ -100,13 +107,19 @@ int main(int argc, char **argv){
 	//Iteramos hasta p = 1
 	for(particion = 0; particion < particiones; particion++){
 
+        //Reiniciamos el contador de puntos
+        for(i = 0; i < cantidad_puntos; i++){
+            clusters_por_tamano[i] = 0;
+            cantidad_redes_cluster_por_tamano[i] = 0;
+        }
+        
 		//Comenzamos a realizar la red
 		for(repeticion = 0; repeticion < repeticiones; repeticion++){
 
-			//Seteamos la semilla aleatoria correspondiente a ésta realización
+            //Seteamos la semilla aleatoria correspondiente a ésta realización
 			srand(semillas[repeticion]);
 			max_cluster = 0;
-
+            
 			//Populamos la red por columna y en simultaneo usamos el algoritmo de Hoshen-Kopelman para detectar clusters
 			for(x = 0; x < ancho; x++){
 				for(y = 0; y < alto; y++){
@@ -136,25 +149,44 @@ int main(int argc, char **argv){
 					}
 				}
 			}
-			//Cuenta la cantidad de clusters ns que hay de cada tamaño
-			s_puntos clusters_por_tamano = contar_clusters(alto, ancho, max_cluster, clusters);
-			
-			//Toma el logaritmo de ns porque log(ns)~s para p~pc
-			for(i = 0; i < clusters_por_tamano.cantidad_puntos; i++){
-				clusters_por_tamano.puntos[i].y = log(clusters_por_tamano.puntos[i].y);
-			}
 
-			//Ajusta log(ns) con un ajuste lineal y calcula el chi2 y el r2
-			b = ajuste_lineal(clusters_por_tamano);
-			//chi2[particion][repeticion] = chi_cuadrado(clusters_por_tamano, b);
-            r2[particion][repeticion] = r_cuadrado(clusters_por_tamano, b);
-			free(clusters_por_tamano.puntos);
-			free(b);
-		}
+			//Imprime la red y los respectivos clusters para verificación
+			//imprimir_lattice(alto, ancho, lattice);
+			//imprimir_lattice(alto, ancho, clusters);     
+            
+			//Cuenta la cantidad de clusters ns que hay de cada tamaño
+			contar_clusters(alto, ancho, max_cluster, clusters, clusters_por_tamano, cantidad_redes_cluster_por_tamano);
+            /*
+            printf("\n");
+            for(i = 0; i < cantidad_puntos; i++){
+                if(clusters_por_tamano[i] > 0) printf("%d %d\n", i, clusters_por_tamano[i]);
+            }
+            */
+            
+        }
+        for(i = 0; i < cantidad_puntos; i++){
+            if(clusters_por_tamano[i] > 1){
+                printf("%d %f\n", i, (float)log((float)clusters_por_tamano[i]/(float)cantidad_redes_cluster_por_tamano[i]));
+            }
+        }        
+        /*
+        //Toma el logaritmo de ns porque log(ns)~s para p~pc
+        for(i = 0; i < clusters_por_tamano.cantidad_puntos; i++){
+            clusters_por_tamano.puntos[i].y = log(clusters_por_tamano.puntos[i].y);
+        }
+
+        //Ajusta log(ns) con un ajuste lineal y calcula el chi2 y el r2
+        b = ajuste_lineal(clusters_por_tamano);
+        chi2[particion][repeticion] = chi_cuadrado(clusters_por_tamano, b);
+        free(b);
+        
 		printf("%d\n", particion);
 		//printf("Pcritica: %f\n", p);
 		p = p + delta_p;
+        */
 	}
+	/*
+    //free(clusters_por_tamano.puntos);
 	//Guardamos todas las fracciones de todas las particiones en un archivo para su posterior análisis	
 	char str[16384], str2[16384];
 	sprintf(str, "corridas/ej1d/%dx%d.txt", alto, ancho);
@@ -164,23 +196,19 @@ int main(int argc, char **argv){
     for (particion = 0; particion < particiones; particion++) {
 		sprintf(str, "%f", p);
 		for(repeticion = 0; repeticion < repeticiones; repeticion++){
-			//strcat(str, "\t");
-			//sprintf(str2, "%f", chi2[particion][repeticion]);
-			//strcat(str, str2);
 			strcat(str, "\t");
-            if(r2[particion][repeticion] != 10000000){
-                sprintf(str2, "%f", r2[particion][repeticion]);
-            }else{
-                sprintf(str2, "%s", "na");
-            }
+			sprintf(str2, "%f", chi2[particion][repeticion]);
 			strcat(str, str2);
+			//strcat(str, "\t");
+			//sprintf(str2, "%f", r2[particion][repeticion]);
+			//strcat(str, str2);
 		}
 		strcat(str, "\n");
    		fprintf(archivo, "%s", str);
 		p = p + delta_p;
     }
 	fclose(archivo);
-
+    */
 	//Mostramos el tiempo que tardó la corrida
 	clock_t end = clock();
 	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
@@ -289,29 +317,47 @@ void media(s_puntos puntos, float mu[2]){
 }
 
 //Función que cuenta la cantidad de clusters de determinado tamaño
-s_puntos contar_clusters(int alto, int ancho, int max_cluster, int clusters[alto][ancho]){
+void contar_clusters(int alto, int ancho, int max_cluster, int clusters[alto][ancho], int *clusters_por_tamano, int *cantidad_redes_cluster_por_tamano){
 	int x, y, i, cantidad_puntos = 0, maximo_tamano = 0;
-	int tamano_de_clusters[max_cluster];
+	int tamano_de_clusters[max_cluster+1];
+    int clusters_por_tamano_aux[alto*ancho];
+    
+    //Recorre toda la red y cuenta cuantos elementos tiene cada cluster
 	for(i = 0; i <= max_cluster; i++) tamano_de_clusters[i] = 0;
 	for(y = 0; y < alto; y++){
 		for(x = 0; x < ancho; x++){
-			tamano_de_clusters[clusters[y][x]]++;
+            if(clusters[y][x] > 0) tamano_de_clusters[clusters[y][x]]++;
 		}
 	}
+	for(i = 1; i <= max_cluster; i++) {
+        //printf("%d %d\n", i, tamano_de_clusters[i]);
+        if(tamano_de_clusters[i] > 0){
+            clusters_por_tamano_aux[tamano_de_clusters[i]]++;
+        }
+    }
+	for(i = 1; i <= max_cluster; i++) {
+        //printf("%d %d\n", i, tamano_de_clusters[i]);
+        if(clusters_por_tamano_aux[i] > 0){
+            cantidad_redes_cluster_por_tamano[i]++;
+            clusters_por_tamano[i] = clusters_por_tamano[i] + clusters_por_tamano_aux[i];
+        }
+    }
+	return;
+	
+	/*
 	for(i = 1; i <= max_cluster; i++) {
 		if(tamano_de_clusters[i] > maximo_tamano) maximo_tamano = tamano_de_clusters[i];
 		//printf("%d %d\n", i, tamano_de_clusters[i]);
 	}
 	//printf("\n\n\n");
+	*/
+    /*
 	int cantidad_por_tamano[maximo_tamano];
 	for(i = 0; i <= maximo_tamano; i++) cantidad_por_tamano[i] = 0;
 	for(i = 1; i <= max_cluster; i++) {
 		cantidad_por_tamano[tamano_de_clusters[i]]++;
 	}
-	
-	//Descarto de las puntas para que ajuste mejor y no tener problemas de red de tamaño finito, desde 5 hasta 50 (discutir estos límites arbitrarios)
-	maximo_tamano = (maximo_tamano > 40) ? 40: maximo_tamano;
-	for(i = 5; i < maximo_tamano; i++){
+	for(i = 3; i < maximo_tamano-2; i++){
 		//printf("%d %d\n", i, cantidad_por_tamano[i]);
 		if(cantidad_por_tamano[i] > 1) cantidad_puntos++;	
 	}
@@ -319,7 +365,8 @@ s_puntos contar_clusters(int alto, int ancho, int max_cluster, int clusters[alto
 	s_puntos puntos;
 	puntos.puntos = malloc(sizeof(s_punto) * cantidad_puntos);
 	puntos.cantidad_puntos = 0;
-	for(i = 5; i < maximo_tamano; i++){
+	
+    for(i = 1; i <= max_cluster; i++){ //Cuenta clusters de tamaño 3 en adelante y hasta el máximo menos 2
 		if(cantidad_por_tamano[i] > 1){
 			puntos.puntos[puntos.cantidad_puntos].x = (float)i;
 			puntos.puntos[puntos.cantidad_puntos].y = (float)cantidad_por_tamano[i];
@@ -327,6 +374,7 @@ s_puntos contar_clusters(int alto, int ancho, int max_cluster, int clusters[alto
 		}
 	}
 	return(puntos);
+	*/
 }
 
 //Función que imprime una red

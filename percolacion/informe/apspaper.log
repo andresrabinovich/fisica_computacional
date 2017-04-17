@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016/Debian) (preloaded format=pdflatex 2016.12.5)  11 APR 2017 01:21
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016/Debian) (preloaded format=pdflatex 2016.12.5)  15 APR 2017 00:49
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -876,19 +876,19 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
 
 LaTeX Warning: A float is stuck (cannot be placed); try class option [floatfix]
- on input line 290.
+ on input line 298.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 298--299
+Underfull \hbox (badness 10000) in paragraph at lines 306--307
 
  []
 
-(./apspaper.bbl) [2 <./imagenes/ej1a/hist4x4.png> <./imagenes/ej1a/hist8x8.png>
- <./imagenes/ej1a/hist16x16.png> <./imagenes/ej1a/hist32x32.png> <./imagenes/ej
-1a/hist64x64.png> <./imagenes/ej1a/hist128x128.png> <./imagenes/ej1b/4x4.png (P
-NG copy)> <./imagenes/ej1b/8x8.png (PNG copy)> <./imagenes/ej1b/16x16.png (PNG 
-copy)> <./imagenes/ej1b/32x32.png (PNG copy)> <./imagenes/ej1b/64x64.png (PNG c
-opy)> <./imagenes/ej1b/128x128.png (PNG copy)>] (./apspaper.aux)
+(./apspaper.bbl [2 <./imagenes/ej1a/hist4x4.png> <./imagenes/ej1a/hist8x8.png> 
+<./imagenes/ej1a/hist16x16.png> <./imagenes/ej1a/hist32x32.png> <./imagenes/ej1
+a/hist64x64.png> <./imagenes/ej1a/hist128x128.png> <./imagenes/ej1b/4x4.png (PN
+G copy)> <./imagenes/ej1b/8x8.png (PNG copy)> <./imagenes/ej1b/16x16.png (PNG c
+opy)> <./imagenes/ej1b/32x32.png (PNG copy)> <./imagenes/ej1b/64x64.png (PNG co
+py)> <./imagenes/ej1b/128x128.png (PNG copy)>]) [3] (./apspaper.aux)
 
 LaTeX Warning: There were multiply-defined labels.
 
@@ -896,7 +896,7 @@ LaTeX Warning: There were multiply-defined labels.
 Here is how much of TeX's memory you used:
  6022 strings out of 494902
  83314 string characters out of 6179891
- 176192 words of memory out of 5000000
+ 178192 words of memory out of 5000000
  9207 multiletter control sequences out of 15000+600000
  14699 words of font info for 54 fonts, out of 8000000 for 9000
  36 hyphenation exceptions out of 8191
@@ -918,10 +918,10 @@ exlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/
 texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/share/texlive/texmf-d
 ist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/texmf-dist/fo
 nts/type1/public/amsfonts/cm/cmti9.pfb>
-Output written on apspaper.pdf (2 pages, 342764 bytes).
+Output written on apspaper.pdf (3 pages, 341715 bytes).
 PDF statistics:
- 101 PDF objects out of 1000 (max. 8388607)
- 60 compressed objects within 1 object stream
+ 104 PDF objects out of 1000 (max. 8388607)
+ 62 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  61 words of extra memory for PDF output out of 10000 (max. 10000000)
 

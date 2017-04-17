@@ -29,63 +29,68 @@ for(i in c("4x4", "8x8", "16x16", "32x32", "64x64", "128x128")){
 
 #ej1b
 for(i in c("4x4", "8x8", "16x16", "32x32", "64x64", "128x128")){
+  n = 10000
   datos <- read_delim(paste("~/fisica_computacional/percolacion/programacion/corridas/ej1b/", i, ".txt", sep=""), "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE)
   datos[, -1] <- datos[, -1]/100
-  p<-apply(datos[, -1], 2, function(x){
-    min(which(x >= 0.5))
-  })
-  p<-c(t(datos[p, 1]))
-  print(mean(p))
-  print(sd(p))
+  datos[, 2] <- rowSums(datos[, -1])/10
+  q  <- 1-datos[, 1]
+  k  <- datos[, 2]
+  sd <- sqrt(k*q*datos[, 1]/n)
+  p  <- datos[min(which(k >= 0.5)), 1]
+  e  <- sd[min(which(k >= 0.5)), 1]
+  
+  #p<-apply(datos[, -1], 2, function(x){
+  #  min(which(x >= 0.5))
+  #})
+  #p<-c(t(datos[p, 1]))
+  #print(mean(p))
+  #print(sd(p))
   #write.table(as.data.frame(datos), file = paste("~/fisica_computacional/percolacion/programacion/corridas/ej1b/a", i, ".txt", sep=""), sep = "\t", col.names = FALSE, row.names = FALSE)
-  m     <- apply(datos[, -1], 1, mean)
-  s     <- apply(datos[, -1], 1, sd)
-  datos <- data.frame(x=datos[, 1], y=m, l=m-2*s, u=m+2*s)
-  plot_datos <- ggplot(datos) + geom_line(aes(y=y, x=X1), colour = "black") +
-    geom_ribbon(aes(ymin=l, ymax=u, x=X1), alpha = 0.3, fill = "red") +
+  #m     <- apply(datos[, -1], 1, mean)
+  #s     <- apply(datos[, -1], 1, sd)
+  datos <- data.frame(x=datos[, 1], y=datos[, 2], l=datos[, 2]-sd, u=datos[, 2]+sd)
+  colnames(datos) <- c("x", "y", "l", "u")
+  plot_datos <- ggplot(datos) + geom_line(aes(y=y, x=x), colour = "black") +
+    geom_ribbon(aes(ymin=l, ymax=u, x=x), alpha = 0.3, fill = "red") +
     labs(x="p", y="Fracción percolante") +
     theme_original()
   print(plot_datos)
+  print(p)
+  print(e)
 }
 
 #ej1d
-for(i in c("4x4", "8x8", "16x16", "32x32", "64x64", "128x128")){
-  datos   <- read_delim(paste("~/fisica_computacional/percolacion/programacion/corridas/ej1d/", i, ".txt", sep=""), "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE)
-  pares   <- seq(2, ncol(datos)-1, 2)
-  impares <- pares + 1
-  p<-apply(datos[, pares], 2, function(x){
-    which.min(x)
-  })
-  i<-apply(datos[, impares], 2, function(x){
-    which.max(x)
-  })  
-  p<-c(t(datos[p, 1]))
-  print(mean(p))
-  print(sd(p))
-  i<-c(t(datos[i, 1]))
-  print(mean(i))
-  print(sd(i))
-  
-  #write.table(as.data.frame(datos), file = paste("~/fisica_computacional/percolacion/programacion/corridas/ej1b/a", i, ".txt", sep=""), sep = "\t", col.names = FALSE, row.names = FALSE)
-  m     <- apply(datos[, -1], 1, mean)
-  s     <- apply(datos[, -1], 1, sd)
-  datos <- data.frame(x=datos[, 1], y=m, l=m-2*s, u=m+2*s)
-  plot_datos <- ggplot(datos) + geom_line(aes(y=y, x=X1), colour = "black") +
-    geom_ribbon(aes(ymin=l, ymax=u, x=X1), alpha = 0.3, fill = "red") +
-    labs(x="p", y="Fracción percolante") +
-    theme_original()
-  print(plot_datos)
-}
+for(i in c("16x16", "32x32", "64x64", "128x128")){
+  datos   <- as.data.frame(read_delim(paste("~/fisica_computacional/percolacion/programacion/corridas/ej1d/", i, ".txt", sep=""), "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE, na = "na"))
 
-m<-apply(datos[, -1], 1, function(x){
-  mean(x)
-})
-s<-apply(datos[, -1], 1, function(x){
-  sd(x)
-})
-datos <- data.frame(x=datos[, 1], y=m, l=m-s, u=m+s)
-plot_datos <- ggplot(datos) + geom_line(aes(y=y, x=X1), colour = "black") +
-  geom_ribbon(aes(ymin=l, ymax=u, x=X1), alpha = 0.3, fill = "red") +
-  labs(x="p", y="chi2") +
-  theme_original()
-print(plot_datos)
+  #m<-apply(datos[, -1], 1, function(x){
+  #  median(as.numeric(x[!is.na(x)]))
+  #})
+  
+  #s<-apply(datos[, -1], 1, function(x){
+  #  sd(as.numeric(x[!is.na(x)]))
+  #})
+  
+  m<-apply(datos[, -1], 2, function(x){
+    which(x == max(x))
+  })
+  m<-lapply(m, function(x){
+    median(datos[x, 1])
+  })
+  m <- unlist(m)
+  m <- m[!is.nan(m)]
+  print(median(m, na.rm = TRUE))
+  print(sd(m, na.rm = TRUE))
+  
+
+  #s<-apply(datos[, -1], 1, function(x){
+  #  sd(as.numeric(x[!is.na(x)]))
+  #})
+  #datos <- data.frame(x=datos[, 1], y=m, l=m-s, u=m+s)
+  #plot_datos <- ggplot(datos) + geom_line(aes(y=y, x=X1), colour = "black") +
+  #  geom_ribbon(aes(ymin=l, ymax=u, x=X1), alpha = 0.3, fill = "red") +
+  #  labs(x="p", y="r2") +
+  #  theme_original()
+  #print(plot_datos)
+  #print(datos[which.max(m), 1])
+}
