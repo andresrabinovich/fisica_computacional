@@ -94,3 +94,23 @@ for(i in c("16x16", "32x32", "64x64", "128x128")){
   #print(plot_datos)
   #print(datos[which.max(m), 1])
 }
+
+#ej2
+for(i in c("4x4", "8x8", "16x16", "32x32", "64x64", "128x128")[5]){
+  datos <- as.data.frame(read_delim(paste("~/fisica_computacional/percolacion/programacion/corridas/ej2/", i, ".txt", sep=""), "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE, na = "na"))
+  m<-apply(datos[, -1], 1, function(x){
+    #x <- x[x != 0]
+    mean(x)
+  })
+  s<-apply(datos[, -1], 1, function(x){
+    #x <- x[x != 0]
+    sd(x)
+  })
+  
+  datos <- data.frame(x=datos[, 1], y=m, l=m-s, u=m+s)
+  plot_datos <- ggplot(datos) + geom_line(aes(y=y, x=x), colour = "black") +
+    geom_ribbon(aes(ymin=l, ymax=u, x=x), alpha = 0.3, fill = "red") +
+    labs(x="p", y="Intensidad Pc") +
+    theme_original()
+  print(plot_datos)
+}
