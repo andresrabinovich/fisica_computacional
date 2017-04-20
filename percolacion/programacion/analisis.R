@@ -96,14 +96,12 @@ for(i in c("16x16", "32x32", "64x64", "128x128")){
 }
 
 #ej2
-for(i in c("4x4", "8x8", "16x16", "32x32", "64x64", "128x128")[5]){
+for(i in c("4x4", "8x8", "16x16", "32x32", "64x64", "128x128")){
   datos <- as.data.frame(read_delim(paste("~/fisica_computacional/percolacion/programacion/corridas/ej2/", i, ".txt", sep=""), "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE, na = "na"))
   m<-apply(datos[, -1], 1, function(x){
-    #x <- x[x != 0]
     mean(x)
   })
   s<-apply(datos[, -1], 1, function(x){
-    #x <- x[x != 0]
     sd(x)
   })
   
@@ -114,3 +112,19 @@ for(i in c("4x4", "8x8", "16x16", "32x32", "64x64", "128x128")[5]){
     theme_original()
   print(plot_datos)
 }
+
+#ej3
+datos <- as.data.frame(read_delim("~/fisica_computacional/percolacion/programacion/corridas/ej3/ej3.txt", "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE))
+m<-apply(datos[, -1], 1, function(x){
+  mean(x)
+})
+s<-apply(datos[, -1], 1, function(x){
+  sd(x)
+})
+
+datos <- data.frame(x=datos[, 1], y=m, l=m-s, u=m+s)
+plot_datos <- ggplot(datos) + geom_line(aes(y=y, x=x), colour = "black") +
+  geom_ribbon(aes(ymin=l, ymax=u, x=x), alpha = 0.3, fill = "red") +
+  labs(x="L", y="Masa Pc") +
+  theme_original()
+print(plot_datos)
