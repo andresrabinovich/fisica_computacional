@@ -95,6 +95,34 @@ for(i in c("16x16", "32x32", "64x64", "128x128")){
   #print(datos[which.max(m), 1])
 }
 
+#ej1dbis
+datos <- as.data.frame(read_delim(paste("~/fisica_computacional/percolacion/programacion/corridas/ej1d/ej1dbis.txt", sep=""), "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE, na = "na"))
+#tau <- c()
+#fin <- max(unique(datos[, 1]))
+
+datos <- datos[datos[, 2] > 1, ] #Sacamos los clusters de 1 solo elemento
+
+#Sacamos los clusters percolantes de cada realización para que no metan ruido
+d<-data.frame(x=datos[, 1], y=datos[, 2])
+a<-aggregate.data.frame(d, list(d$x), function(z){
+  z[z<max(z)]
+})
+
+#datos <- unlist(apply(a, 1, function(z){ 
+#  datos[which(datos[, 1] == z["Group.1"] & datos[, 2] != z["y"]), 2]
+#}))
+
+#datos <- unlist(a$y)
+datos <- datos[, 2]
+datos_crudos <- table(datos/(64*64*100000))
+datos_filtrados <- datos_crudos
+datos_filtrados <- datos_filtrados[log(as.numeric(names(datos_filtrados))) < -15 & log(as.numeric(names(datos_filtrados))) > -17]
+
+plot(log(as.numeric(names(datos_filtrados))), log(datos_filtrados))
+fiteo<-lm(y.Freq ~ x, data.frame(x = log(as.numeric(names(datos_filtrados))), y = log(datos_filtrados)))
+abline(fiteo)
+summary(fiteo)
+
 #ej2
 for(i in c("4x4", "8x8", "16x16", "32x32", "64x64", "128x128")){
   datos <- as.data.frame(read_delim(paste("~/fisica_computacional/percolacion/programacion/corridas/ej2/", i, ".txt", sep=""), "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE, na = "na"))
@@ -115,16 +143,34 @@ for(i in c("4x4", "8x8", "16x16", "32x32", "64x64", "128x128")){
 
 #ej3
 datos <- as.data.frame(read_delim("~/fisica_computacional/percolacion/programacion/corridas/ej3/ej3.txt", "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE))
+#m<-apply(datos[, -1], 2, function(z){
+tau <- c()
+for(i in 2:nrow(datos)){
+  z <- datos[, i]
+  x <- datos[z>0, 1]
+  y <- z[z>0]
+  a<-lm(y~x, data.frame(x=log(x), y=log(y)))
+  tau <- c(tau, a$coefficients[2])
+  #mean(x)
+}#)
+mean(tau)
+sd(tau)
+
 m<-apply(datos[, -1], 1, function(x){
+  x <- x[x>0]
   mean(x)
 })
 s<-apply(datos[, -1], 1, function(x){
+  x <- x[x>0]
   sd(x)
 })
 
-datos <- data.frame(x=datos[, 1], y=m, l=m-s, u=m+s)
+datos <- data.frame(x=log(datos[, 1]), y=log(m), l=log(m-s), u=log(m+s))
+summary(lm(y~x, datos))
 plot_datos <- ggplot(datos) + geom_line(aes(y=y, x=x), colour = "black") +
   geom_ribbon(aes(ymin=l, ymax=u, x=x), alpha = 0.3, fill = "red") +
-  labs(x="L", y="Masa Pc") +
+  labs(x="log(L)", y="log(Masa Pc)") +
   theme_original()
 print(plot_datos)
+plot(datos$x, datos$y)
+abline(lm(y~x, datos))

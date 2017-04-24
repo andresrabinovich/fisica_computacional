@@ -57,11 +57,11 @@ int main(int argc, char **argv){
 	if(argc == 3){
 		particiones = atoi(argv[2]);
 	}else{
-		particiones = 124;
+		particiones = 1;
 	}
 	
 	//Generamos las repeticiones semillas aleatorias
-	int repeticiones = 10000;
+	int repeticiones = 100000;
 	int semillas[repeticiones];
 	int repeticion;
 	for(repeticion = 0; repeticion < repeticiones; repeticion++){
@@ -84,13 +84,13 @@ int main(int argc, char **argv){
 
 
 	//Configuraciones para la probabilidad de ocupación inicial y la variacion en p
-	int l_inicial = 4;
+	int l_inicial = alto;
     
 	//Declaramos otras variables del programa
 	float p         = 0.5924;
     int cluster_percolante = 0;
-    int masa_cluster_percolante[particiones][repeticiones];
-
+    //int masas_cluster_percolante[particiones][repeticiones];
+    char masas[163840], masas_auxiliar[1024];
     
     
 	
@@ -100,7 +100,11 @@ int main(int argc, char **argv){
 	clock_t begin = clock();
     int izquierda, arriba;
 	//Iteramos hasta p = 1
-	for(particion = 0; particion <= particiones; particion++){
+    	char str[16384];
+	sprintf(str, "corridas/ej1d/ej1dbis.txt");
+    FILE *archivo;
+    archivo = fopen(str,"w");
+	for(particion = 0; particion < particiones; particion++){
 
         alto = ancho = l_inicial + particion;
         
@@ -113,10 +117,9 @@ int main(int argc, char **argv){
         int masa_total = ancho*alto;
         int etiquetas[masa_total/2]; //Si tenemos un nodo ocupado y uno vacío tipo tablero de ajedrez, cada uno es un cluster y son la max cantidad de clusters posibles.
         int masas_de_clusters[masa_total/2]; 
-        
 		//Comenzamos a realizar la red
 		for(repeticion = 0; repeticion < repeticiones; repeticion++){
-            
+            sprintf(masas, "%s", "");            
 			//Seteamos la semilla aleatoria correspondiente a ésta realización
 			srand(semillas[repeticion]);
 			ultimo_cluster = 0;
@@ -205,22 +208,54 @@ int main(int argc, char **argv){
 				}
 				//printf("\n");
 			}
-			
+
+
+            /*
+            for (int i=0; i<m; i++)
+                for (int j=0; j<n; j++)
+                if (matrix[i][j]) {
+                int x = uf_find(matrix[i][j]);
+                if (new_labels[x] == 0) {
+                new_labels[0]++;
+                new_labels[x] = new_labels[0];
+                }
+                matrix[i][j] = new_labels[x];
+                }
+            
+            int total_clusters = new_labels[0];
+            */
+		
+			int *etiquetas_nuevas = calloc(sizeof(int), masa_total/2); // allocate array, initialized to zero
             for (y = 0; y < alto; y++){
                 for (x = 0; x < ancho; x++){
                     if (clusters[y][x]){
-                        clusters[y][x] = encontrar(clusters[y][x], etiquetas);  
+                        int cluster_nuevo = encontrar(clusters[y][x], etiquetas);  
+                        if (etiquetas_nuevas[cluster_nuevo] == 0) {
+                            etiquetas_nuevas[0]++;
+                            etiquetas_nuevas[cluster_nuevo] = etiquetas_nuevas[0];
+                        }
+                        clusters[y][x] = etiquetas_nuevas[cluster_nuevo];
                         masas_de_clusters[clusters[y][x]]++;
                     }
                 }
             }
-
+            
+            int total_de_clusters = etiquetas_nuevas[0];
+            free(etiquetas_nuevas);	
+            for(i = 1; i <= total_de_clusters; i++){
+                if(masas_de_clusters[i] > 1){
+                    sprintf(masas_auxiliar, "%d\t%d\n", repeticion, masas_de_clusters[i]);
+                    strcat(masas, masas_auxiliar);
+                }
+            }
+            fprintf(archivo, "%s", masas);
+            /*
             if(cluster_percolante = verificar_percolacion(alto, ancho, clusters)){
                 masa_cluster_percolante[particion][repeticion] = masas_de_clusters[cluster_percolante];
             }else{
                 masa_cluster_percolante[particion][repeticion] = 0;
             }
-
+            */
  
             /*
             int n_labels = masa_total/2;
@@ -244,6 +279,7 @@ int main(int argc, char **argv){
                 */
             //imprimir_lattice(alto, ancho, lattice);
             //imprimir_lattice(alto, ancho, clusters);
+            //printf("Cantidad de clusters %d\n", etiquetas_nuevas[0]);
             /*
             for(i = 1; i < ultimo_cluster; i++){
                 printf("%d %d\n", encontrar(etiquetas[i], etiquetas), masas_de_clusters[encontrar(etiquetas[i], etiquetas)]);
@@ -259,11 +295,10 @@ int main(int argc, char **argv){
 		}
 		//p = p + delta_p;
 	}
+	
 	//Guardamos todas las fracciones de todas las particiones en un archivo para su posterior análisis	
-	char str[163840], str2[163840];
-	sprintf(str, "corridas/ej3/ej3.txt");
-    FILE *archivo;
-    archivo = fopen(str,"w");
+
+    /*
     for (particion = 0; particion < particiones; particion++) {
 		sprintf(str, "%d", l_inicial + particion);
 		for(repeticion = 0; repeticion < repeticiones; repeticion++){
@@ -277,9 +312,10 @@ int main(int argc, char **argv){
 		strcat(str, "\n");
    		fprintf(archivo, "%s", str);
 		//p = p + delta_p;
-    }
+    }*/
+	
 	fclose(archivo);
-
+    
 	//Mostramos el tiempo que tardó la corrida
 	clock_t end = clock();
 	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
