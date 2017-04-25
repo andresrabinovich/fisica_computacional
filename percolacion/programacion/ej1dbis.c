@@ -61,7 +61,7 @@ int main(int argc, char **argv){
 	}
 	
 	//Generamos las repeticiones semillas aleatorias
-	int repeticiones = 100000;
+	int repeticiones = 30000;
 	int semillas[repeticiones];
 	int repeticion;
 	for(repeticion = 0; repeticion < repeticiones; repeticion++){
@@ -87,7 +87,7 @@ int main(int argc, char **argv){
 	int l_inicial = alto;
     
 	//Declaramos otras variables del programa
-	float p         = 0.5924;
+	float p         = 0.5928;
     int cluster_percolante = 0;
     //int masas_cluster_percolante[particiones][repeticiones];
     char masas[163840], masas_auxiliar[1024];

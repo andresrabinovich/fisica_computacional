@@ -114,7 +114,7 @@ a<-aggregate.data.frame(d, list(d$x), function(z){
 
 #datos <- unlist(a$y)
 datos <- datos[, 2]
-datos_crudos <- table(datos/(64*64*100000))
+datos_crudos <- table(datos/(64*64*30000))
 datos_filtrados <- datos_crudos
 datos_filtrados <- datos_filtrados[log(as.numeric(names(datos_filtrados))) < -15 & log(as.numeric(names(datos_filtrados))) > -17]
 
