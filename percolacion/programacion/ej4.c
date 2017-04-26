@@ -49,9 +49,9 @@ int encontrar(int x, int *etiquetas);
 //COMIENZO DEL PROGRAMA
 //#####################
 int main(int argc, char **argv){
-	//Seteamos la semilla aleatoria para generar al azar el resto de las semillas aleatorias, una para cada particiones de la red y obtener valores repetibles
+//Seteamos la semilla aleatoria para generar al azar el resto de las semillas aleatorias, una para cada particiones de la red y obtener valores repetibles
 	srand(12345);
-	
+
 	//Traemos la cantidad de particiones (argv[2]) o 1000 por defecto
 	int particion, particiones;
 	if(argc == 3){
@@ -59,9 +59,9 @@ int main(int argc, char **argv){
 	}else{
 		particiones = 1000;
 	}
-	
+
 	//Generamos las repeticiones semillas aleatorias
-	int repeticiones = 10000;
+	int repeticiones = 30000;
 	int semillas[repeticiones];
 	int repeticion;
 	for(repeticion = 0; repeticion < repeticiones; repeticion++){
@@ -74,7 +74,7 @@ int main(int argc, char **argv){
 	float r;
 	int alto, ancho;
 
-    
+
 	//Traemos el lado de la red o 16 por defecto
 	if(argc > 1){
 		alto  = atoi(argv[1]);
@@ -82,7 +82,7 @@ int main(int argc, char **argv){
 		alto  = 4;
 	}
 	ancho = alto;
-	
+
 	//Configuraciones para la probabilidad de ocupación inicial y la variacion en p
 	float p_inicial = 0;
 	float p_final   = 1;
@@ -90,41 +90,42 @@ int main(int argc, char **argv){
 	//Declaramos otras variables del programa
 	float p         = p_inicial;
 	float delta_p   = (p_final-p_inicial)/(float)(particiones-1);
-	
+
 	//int masas_cluster_percolante[particiones][repeticiones];
 	char masas[163840], masas_auxiliar[1024];
-    
-        //Medimos el tiempo que tarda el script en correr
+
+	//Medimos el tiempo que tarda el script en correr
 	clock_t begin = clock();
 	int izquierda, arriba;
 	//Iteramos hasta p = 1
-    	char str[16384];
-	sprintf(str, "corridas/ej4/masas.txt");
-	FILE *archivo;
-	archivo = fopen(str,"w");
-	
-        //Empezamos a percolar
-        printf("Percolando red cuadrada de %dx%d\n", alto, ancho);
-	int lattice[alto][ancho];
-        int clusters[alto][ancho];
-        int masa_total = ancho*alto;
-	int etiquetas[masa_total/2]; //Si tenemos un nodo ocupado y uno vacío tipo tablero de ajedrez, cada uno es un cluster y son la max cantidad de clusters posibles.
-		
-	for(particion = 0; particion < particiones; particion++){
 
+
+	//Empezamos a percolar
+	printf("Percolando red cuadrada de %dx%d\n", alto, ancho);
+	int lattice[alto][ancho];
+	int clusters[alto][ancho];
+	int masa_total = ancho*alto;
+	int etiquetas[masa_total/2]; //Si tenemos un nodo ocupado y uno vacío tipo tablero de ajedrez, cada uno es un cluster y son la max cantidad de clusters posibles.
+    
+	char str[16384];
+	sprintf(str, "corridas/ej4/masas.txt");
+    FILE *archivo;
+    archivo = fopen(str,"w");
+	
+	for(particion = 0; particion < particiones; particion++){
+		//int masas_cluster_percolante[particiones][repeticiones];
+		int *masas_tableadas = (int*)calloc(alto*ancho, sizeof(int));
+		
 		//Comenzamos a realizar la red
 		for(repeticion = 0; repeticion < repeticiones; repeticion++){
-		  
 
-		    int masas_de_clusters[masa_total/2]; 
-	
-		    sprintf(masas, "%s", "");            
+			int masas_de_clusters[masa_total/2]; 
 			//Seteamos la semilla aleatoria correspondiente a ésta realización
 			srand(semillas[repeticion]);
 			ultimo_cluster = 0;
-	      ultima_etiqueta = 0;
-	      for(i = 0; i < masa_total/2;i++) etiquetas[i] = i;
-    
+			ultima_etiqueta = 0;
+			for(i = 0; i < masa_total/2;i++) etiquetas[i] = i;
+
 			//Populamos la red por columna y en simultaneo usamos el algoritmo de Hoshen-Kopelman para detectar clusters
 			for(x = 0; x < ancho; x++){
 				for(y = 0; y < alto; y++){
@@ -132,204 +133,103 @@ int main(int argc, char **argv){
 					//Ponemos un 1 en la red con probabilidad p
 					if(r <= p){
 						lattice[y][x]  = 1; //Si queremos imprimir la red original
-                        clusters[y][x] = 1;
+						clusters[y][x] = 1;
 						//Algoritmo de Hoshen-Kopelman para detectar clusters. Se fija si el nodo de arriba suyo está poblado y pertenece a algún cluster. Si pertenece a algún cluster
 						//se pone a si mismo en ese cluster. Después se fija si a su lado izquierdo hay un nodo poblado perteneciente a un cluster distinto. Si pertenece a algún cluster distinto                        
-                        if(x > 0 && y > 0){
-                            izquierda = clusters[y][x-1];
-                            arriba = clusters[y-1][x];
-                            if (izquierda == 0 && arriba == 0){
-                                ultimo_cluster = ultimo_cluster + 1;
-                                clusters[y][x] = ultimo_cluster;
-                                masas_de_clusters[clusters[y][x]] = 0;
-                            }else if (izquierda != 0 && arriba == 0){
-                                clusters[y][x] = encontrar(izquierda, etiquetas);
-                            }else if (izquierda == 0 && arriba != 0){ 
-                                clusters[y][x] = encontrar(arriba, etiquetas);
-                            }else{ 
-                                unir(arriba, izquierda, etiquetas); 
-                                clusters[y][x] = encontrar(izquierda, etiquetas);
-                            }
-                        }else if(y > 0){
-                            arriba = clusters[y-1][x];
-                            if (arriba == 0){
-                                ultimo_cluster = ultimo_cluster + 1;
-                                clusters[y][x] = ultimo_cluster;
-                                masas_de_clusters[clusters[y][x]] = 0;
-                            }else{
-                                clusters[y][x] = encontrar(arriba, etiquetas);
-                            }                            
-                        }else if(x > 0){
-                            izquierda = clusters[y][x-1];
-                            if (izquierda == 0){ 
-                                ultimo_cluster = ultimo_cluster + 1;
-                                clusters[y][x] = ultimo_cluster;
-                                masas_de_clusters[clusters[y][x]] = 0;
-                            }else{
-                                clusters[y][x] = encontrar(izquierda, etiquetas);
-                            } 
-                        }else{
-                            ultimo_cluster = ultimo_cluster + 1;
-                            clusters[y][x] = ultimo_cluster;
-                            masas_de_clusters[clusters[y][x]] = 0;
-                        }
-                        //masas_de_clusters[clusters[y][x]]++;
-						/*
-                        if (y > 0 && clusters[y-1][x] != 0){
-							clusters[y][x] = clusters[y-1][x];
-                            
-                            //masas_de_clusters[clusters[y][x]-1]++;
-							if (x > 0 && clusters[y][x-1] != 0 && clusters[y][x-1] != clusters[y-1][x]){
-                                //masas_de_clusters[clusters[y-1][x]-1] += masas_de_clusters[clusters[y][x-1]-1];
-                                //masas_de_clusters[clusters[y][x-1]-1] = 0;
-								//actualizar_clusters(alto, ancho, clusters, clusters[y][x-1], clusters[y-1][x], x); //clusters[y][x-1] es el actual y clusters[y-1][x] es el cambio
-                                //printf("%d %d\n", clusters[y-1][x], clusters[y][x-1]);
-                                etiquetas[ultima_etiqueta][0] = clusters[y][x-1];
-                                etiquetas[ultima_etiqueta][1] = clusters[y-1][x];
-                                //Para intentar minimizar las etiquetas repetidas chequea la etiqueta anterior para que no sea la misma
-                                if(ultima_etiqueta == 0 || etiquetas[ultima_etiqueta-1][0] != etiquetas[ultima_etiqueta][0] || etiquetas[ultima_etiqueta-1][1] != etiquetas[ultima_etiqueta][1]) ultima_etiqueta++;
-                                
+						if(x > 0 && y > 0){
+							izquierda = clusters[y][x-1];
+							arriba = clusters[y-1][x];
+							if (izquierda == 0 && arriba == 0){
+								ultimo_cluster = ultimo_cluster + 1;
+								clusters[y][x] = ultimo_cluster;
+								masas_de_clusters[clusters[y][x]] = 0;
+							}else if (izquierda != 0 && arriba == 0){
+								clusters[y][x] = encontrar(izquierda, etiquetas);
+							}else if (izquierda == 0 && arriba != 0){ 
+								clusters[y][x] = encontrar(arriba, etiquetas);
+							}else{ 
+								unir(arriba, izquierda, etiquetas); 
+								clusters[y][x] = encontrar(izquierda, etiquetas);
 							}
-						}else if (x > 0 && clusters[y][x-1] != 0){
-							clusters[y][x] = clusters[y][x-1];
-                            //masas_de_clusters[clusters[y][x]-1]++;
+						}else if(y > 0){
+							arriba = clusters[y-1][x];
+							if (arriba == 0){
+								ultimo_cluster = ultimo_cluster + 1;
+								clusters[y][x] = ultimo_cluster;
+								masas_de_clusters[clusters[y][x]] = 0;
+							}else{
+								clusters[y][x] = encontrar(arriba, etiquetas);
+							}                            
+						}else if(x > 0){
+							izquierda = clusters[y][x-1];
+							if (izquierda == 0){ 
+								ultimo_cluster = ultimo_cluster + 1;
+								clusters[y][x] = ultimo_cluster;
+								masas_de_clusters[clusters[y][x]] = 0;
+							}else{
+								clusters[y][x] = encontrar(izquierda, etiquetas);
+							} 
 						}else{
-							ultimo_cluster    += 1;
-                            //masas_de_clusters[ultimo_cluster-1] = 1;
-							clusters[y][x]  = ultimo_cluster;
+							ultimo_cluster = ultimo_cluster + 1;
+							clusters[y][x] = ultimo_cluster;
+							masas_de_clusters[clusters[y][x]] = 0;
 						}
-                        */
 					}else{
 						lattice[y][x]  = 0;
 						clusters[y][x] = 0;
 					}
-					//printf("%d ", clusters[y][x]);
 				}
-				//printf("\n");
 			}
 
 
-            /*
-            for (int i=0; i<m; i++)
-                for (int j=0; j<n; j++)
-                if (matrix[i][j]) {
-                int x = uf_find(matrix[i][j]);
-                if (new_labels[x] == 0) {
-                new_labels[0]++;
-                new_labels[x] = new_labels[0];
-                }
-                matrix[i][j] = new_labels[x];
-                }
-            
-            int total_clusters = new_labels[0];
-            */
-		
-			int *etiquetas_nuevas = calloc(sizeof(int), masa_total/2); // allocate array, initialized to zero
-            for (y = 0; y < alto; y++){
-                for (x = 0; x < ancho; x++){
-                    if (clusters[y][x]){
-                        int cluster_nuevo = encontrar(clusters[y][x], etiquetas);  
-                        if (etiquetas_nuevas[cluster_nuevo] == 0) {
-                            etiquetas_nuevas[0]++;
-                            etiquetas_nuevas[cluster_nuevo] = etiquetas_nuevas[0];
-                        }
-                        clusters[y][x] = etiquetas_nuevas[cluster_nuevo];
-                        masas_de_clusters[clusters[y][x]]++;
-                    }
-                }
-            }
-            
-            int total_de_clusters = etiquetas_nuevas[0];
-            free(etiquetas_nuevas);	
-	    
-	    //guardamos en un archivo cada uno de los clusters
-            for(i = 1; i <= total_de_clusters; i++){
-                if(masas_de_clusters[i] > 1){
-                    sprintf(masas_auxiliar, "%f\t%d\n", p, masas_de_clusters[i]);
-                    strcat(masas, masas_auxiliar);
-                }
-            }
-            fprintf(archivo, "%s", masas);
-            /*
-            if(cluster_percolante = verificar_percolacion(alto, ancho, clusters)){
-                masa_cluster_percolante[particion][repeticion] = masas_de_clusters[cluster_percolante];
-            }else{
-                masa_cluster_percolante[particion][repeticion] = 0;
-            }
-            */
- 
-            /*
-            int n_labels = masa_total/2;
-            int j, m=alto, n=ancho;
-            int *new_labels = calloc(sizeof(int), n_labels); // allocate array, initialized to zero
-  
-            for (int i=0; i<m; i++)
-                for (int j=0; j<n; j++)
-                if (clusters[i][j]) {
-                int x = encontrar(clusters[i][j], etiquetas);
-                if (new_labels[x] == 0) {
-                new_labels[0]++;
-                new_labels[x] = new_labels[0];
-                }
-                clusters[i][j] = new_labels[x];
-                }
-            
-            int total_clusters = new_labels[0];
 
-            free(new_labels);
-                */
-            //imprimir_lattice(alto, ancho, lattice);
-            //imprimir_lattice(alto, ancho, clusters);
-            //printf("Cantidad de clusters %d\n", etiquetas_nuevas[0]);
-            /*
-            for(i = 1; i < ultimo_cluster; i++){
-                printf("%d %d\n", encontrar(etiquetas[i], etiquetas), masas_de_clusters[encontrar(etiquetas[i], etiquetas)]);
+			int *etiquetas_nuevas = calloc(sizeof(int), masa_total/2); // allocate array, initialized to zero
+			for (y = 0; y < alto; y++){
+				for (x = 0; x < ancho; x++){
+					if (clusters[y][x]){
+						int cluster_nuevo = encontrar(clusters[y][x], etiquetas);  
+						if (etiquetas_nuevas[cluster_nuevo] == 0) {
+							etiquetas_nuevas[0]++;
+							etiquetas_nuevas[cluster_nuevo] = etiquetas_nuevas[0];
+						}
+						clusters[y][x] = etiquetas_nuevas[cluster_nuevo];
+						masas_de_clusters[clusters[y][x]]++;
+					}
+				}
+			}
+
+			int total_de_clusters = etiquetas_nuevas[0];
+			free(etiquetas_nuevas);	
+
+			for(i = 1; i <= total_de_clusters; i++){
+				masas_tableadas[masas_de_clusters[i]]++;
             }
-            
-            actualizar_etiquetas(ultima_etiqueta, etiquetas);
-            for(i = 0; i < ultima_etiqueta; i++){
-                printf("%d %d\n", etiquetas[i][0], etiquetas[i][1]);
-            } 
-            */
-            //printf("Intensidad Pc: %f\n", intensidad_cluster_percolante[particion][repeticion]);
-             
+			
+
 		}
+		for(i = 2; i <= alto*ancho; i++){ //No guardo los de 1
+			if(masas_tableadas[i] > 0){
+				fprintf(archivo, "%f\t%d\t%d\n", p, i, masas_tableadas[i]);
+			}
+		}
+		free(masas_tableadas);   
 		p = p + delta_p;
 		printf("Percolando con p=%f\n", p);		
+		
 	}
-	
-	//Guardamos todas las fracciones de todas las particiones en un archivo para su posterior análisis	
-
-    /*
-    for (particion = 0; particion < particiones; particion++) {
-		sprintf(str, "%d", l_inicial + particion);
-		for(repeticion = 0; repeticion < repeticiones; repeticion++){
-			//strcat(str, "\t");
-			//sprintf(str2, "%f", chi2[particion][repeticion]);
-			//strcat(str, str2);
-			strcat(str, "\t");
-            sprintf(str2, "%d", masa_cluster_percolante[particion][repeticion]);
-			strcat(str, str2);
-		}
-		strcat(str, "\n");
-   		fprintf(archivo, "%s", str);
-		//p = p + delta_p;
-    }*/
-	
 	fclose(archivo);
-    
+ 
 	//Mostramos el tiempo que tardó la corrida
 	clock_t end = clock();
 	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
 	printf("Transcurrió: %f segundos\n", time_spent);
-	
+
 	return(0);
 }
 
 //#######################
 //DEFINICIÓN DE FUNCIONES
 //#######################
-
 void unir(int x, int y, int *etiquetas){
     etiquetas[encontrar(x, etiquetas)] = encontrar(y, etiquetas);
 }
