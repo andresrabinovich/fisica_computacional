@@ -214,6 +214,7 @@ for(i in p){
 tau                       <- 1.98
 sigma                     <- 36/91
 pc                        <- 0.5927
+datos_filtrados           <- datos_filtrados[sample(1:nrow(datos_filtrados), replace = FALSE, 1000), ]
 datos_filtrados$ns        <- datos_filtrados$ns/(64*64*30000)
 s                         <- unique(datos_filtrados$s)
 nsc                       <- s^(-tau)
@@ -223,49 +224,20 @@ y                         <- datos_filtrados$ns/nsc[as.character(datos_filtrados
 z                         <- datos_filtrados$s^sigma*epsilon
 plot(z, y)
 
-
-
-tau             <- 1.98
-sigma           <- 36/91
-pc              <- 0.5927
-datos <- datos[which(datos[, 1] == unique(datos[, 1][300])), ]
-datos[, 3]      <- datos[, 3]/(64*64*30000)
-s               <- 2:max(datos$s)
-nsc             <- s^(-tau)
-names(nsc)      <- s
-epsilon         <- ((datos$p-pc)/pc)
-y               <- datos$ns/nsc[as.character(datos$s)]
-z               <- datos$s^sigma*epsilon
-plot(z, y)
-#datos <- datos[datos[, "s"]>=2 & datos[, "s"]<=15, ] #Nos quedamos con los s entre 2 y 15
-#datos <- datos[datos[, "s"]>=2 & datos[, "s"]<=15, ] #Nos quedamos con los p entre 2 y 15
-#m<-apply(datos[, -1], 2, function(z){
-for(i in 2:nrow(datos)){
-  z <- datos[, i]
-  x <- datos[z>0, 1]
-  y <- z[z>0]
-  a<-lm(y~x, data.frame(x=log(x), y=log(y)))
-  tau <- c(tau, a$coefficients[2])
-  #mean(x)
-}#)
-mean(tau)
-sd(tau)
-
-m<-apply(datos[, -1], 1, function(x){
-  x <- x[x>0]
-  mean(x)
-})
-s<-apply(datos[, -1], 1, function(x){
-  x <- x[x>0]
-  sd(x)
-})
-
-datos <- data.frame(x=log(datos[, 1]), y=log(m), l=log(m-s), u=log(m+s))
-summary(lm(y~x, datos))
-plot_datos <- ggplot(datos) + geom_line(aes(y=y, x=x), colour = "black") +
-  geom_ribbon(aes(ymin=l, ymax=u, x=x), alpha = 0.3, fill = "red") +
-  labs(x="log(L)", y="log(Masa Pc)") +
-  theme_original()
-print(plot_datos)
-plot(datos$x, datos$y)
-abline(lm(y~x, datos))
+#ej5
+datos              <- as.data.frame(read_delim("~/fisica_computacional/percolacion/programacion/corridas/ej4/masas.txt", "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE))
+colnames(datos)    <- c("p", "s", "ns")
+datos_filtrados$ns <- datos_filtrados$ns/(64*64*30000)
+datos_filtrados    <- datos[datos$s > 1 & datos$s <= 15, ]
+#datos_filtrados    <- datos_filtrados[datos_filtrados[, 1] > 0.58 & datos_filtrados[, 1] < 0.6, ]
+pc                 <- 0.5927
+datos_filtrados$e  <- (datos_filtrados$p-pc)/pc
+for(i in 2:15){
+  x <- which(datos_filtrados$s == i)
+  plot(epsilon[x], datos_filtrados[x, 3])
+}
+datos_filtrados$s <- as.factor(datos_filtrados$s)
+ggplot(datos_filtrados) + geom_point(aes(x=e, y=ns, color = s))
+maximos <- aggregate(ns ~ s, datos_filtrados, FUN = max)
+maximos <- merge(maximos, datos_filtrados)
+maximos[order(maximos$s), ]
