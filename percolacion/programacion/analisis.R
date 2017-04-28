@@ -211,17 +211,34 @@ for(i in p){
   m               <- datos[which(datos$p == i), ]
   datos_filtrados <- rbind(datos_filtrados, m[(m$s/max(m$s)) > 0.01 & (m$s/max(m$s)) < 0.12, ])
 }
-tau                       <- 1.98
+datos_filtrados2          <- datos_filtrados
+datos_filtrados           <- datos_filtrados2
+tau                       <- 2.05
 sigma                     <- 36/91
 pc                        <- 0.5927
-datos_filtrados           <- datos_filtrados[sample(1:nrow(datos_filtrados), replace = FALSE, 1000), ]
+#datos_filtrados           <- datos_filtrados[sample(1:nrow(datos_filtrados), replace = FALSE, 1000), ]
 datos_filtrados$ns        <- datos_filtrados$ns/(64*64*30000)
+datos_filtrados$s         <- datos_filtrados$s/(64*64*30000)
 s                         <- unique(datos_filtrados$s)
 nsc                       <- s^(-tau)
 names(nsc)                <- s
 epsilon                   <- (datos_filtrados$p-pc)/pc
 y                         <- datos_filtrados$ns/nsc[as.character(datos_filtrados$s)]
-z                         <- datos_filtrados$s^sigma*epsilon
+z                         <- (datos_filtrados$s^sigma)*epsilon
+plot(z, y)
+
+datosc <- as.data.frame(read_delim(paste("~/fisica_computacional/percolacion/programacion/corridas/ej1d/ej1dbis.txt", sep=""), "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE, na = "na"))
+colnames(datosc) <- c("s", "ns")
+s<-datosc$s[(datosc$s %in% datos_filtrados$s)]
+a<-datosc[which(datosc$s %in% s), ]
+b<-datos_filtrados[which(datos_filtrados$s %in% s), ]
+epsilon                   <- (datos_filtrados$p-pc)/pc
+z<-(s^sigma)*epsilon
+
+y<-a$ns/b$ns
+plot(z, y)
+nsc                       <- (s/(64*64))^(-tau)
+y<-a$ns/nsc
 plot(z, y)
 
 #ej5

@@ -61,7 +61,7 @@ int main(int argc, char **argv){
 	}
 	
 	//Generamos las repeticiones semillas aleatorias
-	int repeticiones = 10000;
+	int repeticiones = 30000;
 	int semillas[repeticiones];
 	int repeticion;
 	for(repeticion = 0; repeticion < repeticiones; repeticion++){
@@ -79,12 +79,11 @@ int main(int argc, char **argv){
 	if(argc > 1){
 		alto  = atoi(argv[1]);
 	}else{
-		alto  = 4;
+		alto  = 16;
 	}
 
-
 	//Configuraciones para la probabilidad de ocupación inicial y la variacion en p
-	int l_inicial = alto;
+	int l_inicial = ancho = alto;
     
 	//Declaramos otras variables del programa
 	float p         = 0.5927;
@@ -122,13 +121,14 @@ int main(int argc, char **argv){
         int etiquetas[masa_total/2]; //Si tenemos un nodo ocupado y uno vacío tipo tablero de ajedrez, cada uno es un cluster y son la max cantidad de clusters posibles.
         int masas_de_clusters[masa_total/2]; 
 		//Comenzamos a realizar la red
+
 		for(repeticion = 0; repeticion < repeticiones; repeticion++){
  			//Seteamos la semilla aleatoria correspondiente a ésta realización
 			srand(semillas[repeticion]);
 			ultimo_cluster = 0;
             ultima_etiqueta = 0;
             for(i = 0; i < masa_total/2;i++) etiquetas[i] = i;
-    
+              
 			//Populamos la red por columna y en simultaneo usamos el algoritmo de Hoshen-Kopelman para detectar clusters
 			for(x = 0; x < ancho; x++){
 				for(y = 0; y < alto; y++){
@@ -185,7 +185,7 @@ int main(int argc, char **argv){
 				}
 				//printf("\n");
 			}
-
+ 
 			int *etiquetas_nuevas = calloc(sizeof(int), masa_total/2); // allocate array, initialized to zero
             for (y = 0; y < alto; y++){
                 for (x = 0; x < ancho; x++){
@@ -200,20 +200,23 @@ int main(int argc, char **argv){
                     }
                 }
             }
-            
+             		
 			//imprimir_lattice(alto, ancho, lattice);
 			//imprimir_lattice(alto, ancho, clusters);
             
             int total_de_clusters = etiquetas_nuevas[0];
             free(etiquetas_nuevas);	
+            
 			int tamano_cluster_percolante = 0;
 			for(i = 1; i <= total_de_clusters; i++){
 				if(masas_de_clusters[i] > tamano_cluster_percolante) tamano_cluster_percolante = masas_de_clusters[i];
             }
+            
             for(i = 1; i <= total_de_clusters; i++){
 				//if(masas_de_clusters[i] < tamano_cluster_percolante) masas_tableadas[masas_de_clusters[i]]++;
 				masas_tableadas[masas_de_clusters[i]]++;
             }
+            
             //for(i = 1; i <= alto*ancho; i++){
 			//	if(masas_tableadas[i] > 0){
 			//		printf("%d %d\n", i, masas_tableadas[i]);
@@ -221,6 +224,7 @@ int main(int argc, char **argv){
             //}          
             if(repeticion%100 == 0) printf("%d\n", repeticion);
 		}
+
 		for (i = 0; i < alto; i++) {
 			free(clusters[i]);
 			free(lattice[i]);
