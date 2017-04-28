@@ -113,10 +113,10 @@ for(i in c("16x16", "32x32", "64x64", "128x128")){
 #ej1dbis
 datos <- as.data.frame(read_delim(paste("~/fisica_computacional/percolacion/programacion/corridas/ej1d/ej1dbis.txt", sep=""), "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE, na = "na"))
 colnames(datos) <- c("s", "ns")
-datos <- datos/(1024*1024*30000)
+datos$ns <- datos$ns/(64*64*30000)
 datos <- log(datos)
 plot(datos)
-datos_filtrados <- datos[datos$s > -21 & datos$s < -18, ]
+datos_filtrados <- datos[datos$s > 2 & datos$s < 5, ]
 plot(datos_filtrados)
 fiteo<-lm(ns ~ s, datos_filtrados)
 abline(fiteo)
@@ -205,7 +205,7 @@ datos           <- as.data.frame(read_delim("~/fisica_computacional/percolacion/
 colnames(datos) <- c("p", "s", "ns")
 
 #Sacamos los fragmentos tales que 0.01<s/s0<0.12
-p <- unique(datos$p)
+p <- sample(unique(datos$p), replace = FALSE, 500)
 datos_filtrados <- data.frame(p=NULL, s=NULL, ns=NULL)
 for(i in p){
   m               <- datos[which(datos$p == i), ]
@@ -213,14 +213,15 @@ for(i in p){
 }
 datos_filtrados2          <- datos_filtrados
 datos_filtrados           <- datos_filtrados2
-tau                       <- 2.05
+tau                       <- 1.74
 sigma                     <- 36/91
 pc                        <- 0.5927
+q0                        <- exp(1)^(-4)
 #datos_filtrados           <- datos_filtrados[sample(1:nrow(datos_filtrados), replace = FALSE, 1000), ]
 datos_filtrados$ns        <- datos_filtrados$ns/(64*64*30000)
-datos_filtrados$s         <- datos_filtrados$s/(64*64*30000)
+#datos_filtrados$s         <- datos_filtrados$s/(64*64*30000)
 s                         <- unique(datos_filtrados$s)
-nsc                       <- s^(-tau)
+nsc                       <- q0*s^(-tau)
 names(nsc)                <- s
 epsilon                   <- (datos_filtrados$p-pc)/pc
 y                         <- datos_filtrados$ns/nsc[as.character(datos_filtrados$s)]
