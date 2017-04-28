@@ -61,8 +61,11 @@ for(i in c("4x4", "8x8", "16x16", "32x32", "64x64", "128x128")){
 }
 
 #ej1c
-pc = 0.5928 
-datos <- data.frame(L=c(4, 8, 16, 64, 128, 200, 256), mu=c(0.5639, 0.5815, 0.5890, 0.5922, 0.5925, 0.5926, 0.5927))
+pc = 0.59274
+
+datos <- data.frame(L=c(4, 8, 16, 20, 32, 40, 50, 64, 70, 80, 90, 100, 128, 200, 256), 
+                    mu=c(0.5639, 0.5815, 0.5890, 0.5899, 0.5924, 0.5918, 0.5920, 0.5923, 0.5923, 0.5925, 0.5922, 0.5926, 0.5925, 0.5926, 0.5927))
+datos <- datos[5:14, ]
 datos$mu <- abs(datos$mu-pc)
 datos <- log(datos)
 ggplot(datos, aes(x=L,y=mu)) + geom_point() + stat_smooth(method = "lm", col = "red", se=FALSE, size=0.5) +
@@ -201,11 +204,13 @@ plot(datos$x, datos$y)
 abline(lm(y~x, datos))
 
 #ej4
-datos           <- as.data.frame(read_delim("~/fisica_computacional/percolacion/programacion/corridas/ej4/masas.txt", "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE))
+datos           <- as.data.frame(read.delim("~/Escritorio/fisica_computacional/percolacion/programacion/corridas/ej4/masas.txt"))
 colnames(datos) <- c("p", "s", "ns")
 
 #Sacamos los fragmentos tales que 0.01<s/s0<0.12
-p <- sample(unique(datos$p), replace = FALSE, 500)
+#p <- sample(unique(datos$p), replace = FALSE, 500)
+p <- unique(datos$p)
+p<-p[p>0.4 & p <0.7]
 datos_filtrados <- data.frame(p=NULL, s=NULL, ns=NULL)
 for(i in p){
   m               <- datos[which(datos$p == i), ]
@@ -227,35 +232,93 @@ epsilon                   <- (datos_filtrados$p-pc)/pc
 y                         <- datos_filtrados$ns/nsc[as.character(datos_filtrados$s)]
 z                         <- (datos_filtrados$s^sigma)*epsilon
 plot(z, y)
-
-datosc <- as.data.frame(read_delim(paste("~/fisica_computacional/percolacion/programacion/corridas/ej1d/ej1dbis.txt", sep=""), "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE, na = "na"))
-colnames(datosc) <- c("s", "ns")
-s<-datosc$s[(datosc$s %in% datos_filtrados$s)]
-a<-datosc[which(datosc$s %in% s), ]
-b<-datos_filtrados[which(datos_filtrados$s %in% s), ]
-epsilon                   <- (datos_filtrados$p-pc)/pc
-z<-(s^sigma)*epsilon
-
-y<-a$ns/b$ns
-plot(z, y)
-nsc                       <- (s/(64*64))^(-tau)
-y<-a$ns/nsc
-plot(z, y)
+elplot<-ggplot(data.frame(z=z, nu=(y))) + geom_point(aes(x=z, y=nu), size=0.1)
+ggsave(filename="~/Escritorio/fisica_computacional/percolacion/informe/imagenes/ej4/scaling.png", width=5, height=5, unit="cm", plot=elplot)
 
 #ej5
-datos              <- as.data.frame(read_delim("~/fisica_computacional/percolacion/programacion/corridas/ej4/masas.txt", "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE))
+datos              <- as.data.frame(read.delim("~/Escritorio/fisica_computacional/percolacion/programacion/corridas/ej4/masas.txt"))
 colnames(datos)    <- c("p", "s", "ns")
-datos_filtrados$ns <- datos_filtrados$ns/(64*64*30000)
 datos_filtrados    <- datos[datos$s > 1 & datos$s <= 15, ]
+datos_filtrados$ns <- datos_filtrados$ns/(64*64*30000)
 #datos_filtrados    <- datos_filtrados[datos_filtrados[, 1] > 0.58 & datos_filtrados[, 1] < 0.6, ]
 pc                 <- 0.5927
 datos_filtrados$e  <- (datos_filtrados$p-pc)/pc
 for(i in 2:15){
   x <- which(datos_filtrados$s == i)
-  plot(epsilon[x], datos_filtrados[x, 3])
+  #plot(epsilon[x], datos_filtrados[x, 3])
 }
-datos_filtrados$s <- as.factor(datos_filtrados$s)
-ggplot(datos_filtrados) + geom_point(aes(x=e, y=ns, color = s))
+#datos_filtrados$s <- as.factor(datos_filtrados$s)
+elplot<-ggplot(datos_filtrados) + geom_point(aes(x=e, y=ns, color = as.factor(s)))
+ggsave(filename="~/Escritorio/fisica_computacional/percolacion/informe/imagenes/ej5/maximos.png", width=5, height=5, unit="cm", plot=elplot)
+
 maximos <- aggregate(ns ~ s, datos_filtrados, FUN = max)
 maximos <- merge(maximos, datos_filtrados)
 maximos[order(maximos$s), ]
+y<-log(abs(maximos$p-pc))
+x<-log(maximos$s)
+datos<-data.frame(x=x, y=y)
+ggplot(datos, aes(x=x,y=y)) + geom_point() + stat_smooth(method = "lm", col = "red", se=FALSE, size=0.5) +
+  labs(x="log(s)", y="log(|<Pmax>-<Pc_L>|)") +
+  theme_original()
+#plot(datos$L, datos$mu)
+fiteo<-lm(y~x, data=datos)
+#abline(fiteo)
+summary(fiteo)
+
+#ej6
+datos              <- as.data.frame(read.delim("~/Escritorio/fisica_computacional/percolacion/programacion/corridas/ej6/masas32.txt"))
+datos              <- cbind(1:nrow(datos), datos)
+colnames(datos)    <- c("id", "p", "s", "ns")
+pc                 <- c(0.5743, 0.5924, 0.5925)
+tamano             <- c(6, 32, 128)
+red                <- 2
+#encontramos los clusters percolantes
+#percolantes        <- aggregate(s ~ p, datos, FUN = max)
+#percolantes        <- merge(percolantes, datos)
+
+#clusters percolantes los sacamos del analisis
+#datos_filtrados    <- datos[!datos$id %in% percolantes$id, ]
+
+#Nos quedamos solo con los p tq 0.4<p<0.7
+datos_filtrados    <- datos_filtrados[datos_filtrados$p > 0.4 & datos_filtrados$p < 0.7, ]
+
+#Nomalizamos ns
+datos_filtrados$ns <- datos_filtrados$ns/(tamano[red]*tamano[red]*10000)
+
+#Agregamos el s^2
+datos_filtrados$s2 <- datos_filtrados$s^2
+
+#Agregamos el producto de ns con s2 para cada termino
+datos_filtrados$nss2 <- datos_filtrados$ns*datos_filtrados$s2
+
+#Calculamos el segundo momento por cada p
+M2                 <- aggregate(nss2 ~ p, datos_filtrados, FUN = sum)
+
+#Agregamos epsilon
+M2$epsilon         <- (M2$p - pc[red])/pc[red]
+
+plot(M2$epsilon, M2$nss2)
+
+#datos_filtrados    <- datos_filtrados[datos_filtrados[, 1] > 0.58 & datos_filtrados[, 1] < 0.6, ]
+datos_filtrados$e  <- (datos_filtrados$p-pc)/pc
+for(i in 2:15){
+  x <- which(datos_filtrados$s == i)
+  #plot(epsilon[x], datos_filtrados[x, 3])
+}
+#datos_filtrados$s <- as.factor(datos_filtrados$s)
+elplot<-ggplot(datos_filtrados) + geom_point(aes(x=e, y=ns, color = as.factor(s)))
+ggsave(filename="~/Escritorio/fisica_computacional/percolacion/informe/imagenes/ej5/maximos.png", width=5, height=5, unit="cm", plot=elplot)
+
+maximos <- aggregate(ns ~ p, datos_filtrados, FUN = max)
+maximos <- merge(maximos, datos_filtrados)
+maximos[order(maximos$s), ]
+y<-log(abs(maximos$p-pc))
+x<-log(maximos$s)
+datos<-data.frame(x=x, y=y)
+ggplot(datos, aes(x=x,y=y)) + geom_point() + stat_smooth(method = "lm", col = "red", se=FALSE, size=0.5) +
+  labs(x="log(s)", y="log(|<Pmax>-<Pc_L>|)") +
+  theme_original()
+#plot(datos$L, datos$mu)
+fiteo<-lm(y~x, data=datos)
+#abline(fiteo)
+summary(fiteo)

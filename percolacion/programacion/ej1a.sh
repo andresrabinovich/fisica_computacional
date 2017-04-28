@@ -1,8 +1,10 @@
 #!/bin/bash
-./ej1a 4 1000
-./ej1a 8 1000
-./ej1a 16 1000
-./ej1a 32 1000
-./ej1a 64 1000
-./ej1a 128 1000
+./ej1abis 20 30000
+./ej1abis 40 30000
+./ej1abis 50 30000
+./ej1abis 70 30000
+./ej1abis 80 30000
+./ej1abis 90 30000
+./ej1abis 100 30000
+
 
