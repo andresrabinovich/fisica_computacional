@@ -57,7 +57,7 @@ int main(int argc, char **argv){
 	if(argc == 3){
 		particiones = atoi(argv[2]);
 	}else{
-		particiones = 500;
+		particiones = 250;
 	}
 
 	//Generamos las repeticiones semillas aleatorias
@@ -84,8 +84,8 @@ int main(int argc, char **argv){
 	ancho = alto;
 
 	//Configuraciones para la probabilidad de ocupación inicial y la variacion en p
-	float p_inicial = 0;
-	float p_final   = 1;
+	float p_inicial = 0.55;
+	float p_final   = 0.7;
 
 	//Declaramos otras variables del programa
 	float p         = p_inicial;
@@ -108,7 +108,7 @@ int main(int argc, char **argv){
 	int etiquetas[masa_total/2]; //Si tenemos un nodo ocupado y uno vacío tipo tablero de ajedrez, cada uno es un cluster y son la max cantidad de clusters posibles.
     
 	char str[16384];
-	sprintf(str, "corridas/ej6/masas%d.txt", alto);
+	sprintf(str, "corridas/ej6/masas2%d.txt", alto);
 	FILE *archivo;
 	archivo = fopen(str,"w");
 	

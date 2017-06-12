@@ -33,7 +33,7 @@ int sumar_lattice(int alto, int ancho, int lattice[alto][ancho]);
 void a_lattice(int alto, int ancho, int lattice[alto][ancho]);
 void inicializar_lattice(int alto, int ancho, int lattice[alto][ancho], int inicializador);
 void actualizar_clusters(int alto, int ancho, int clusters[alto][ancho], int actual, int cambio, int x_max);
-int verificar_percolacion(int alto, int ancho, int clusters[alto][ancho]);
+int verificar_percolacion(int alto, int ancho, int **clusters, int *percolantes);
 s_puntos contar_clusters(int alto, int ancho, int ultimo_cluster, int clusters[alto][ancho]);
 void media(s_puntos puntos, float mu[2]);
 float sumar_vector(float s[], int tamano);
@@ -57,7 +57,7 @@ int main(int argc, char **argv){
 	if(argc == 3){
 		particiones = atoi(argv[2]);
 	}else{
-		particiones = 1;
+		particiones = 1000;
 	}
 	
 	//Generamos las repeticiones semillas aleatorias
@@ -82,27 +82,30 @@ int main(int argc, char **argv){
 		alto  = 16;
 	}
 
-	//Configuraciones para la probabilidad de ocupación inicial y la variacion en p
-	int l_inicial = ancho = alto;
+    ancho = alto;
     
 	//Declaramos otras variables del programa
-	float p         = 0.5927;
+	float p         = 0;
+    float p_final   = 1;
+    float delta_p   = (p_final-p)/(float)particiones;
     int cluster_percolante = 0;
     //int masas_cluster_percolante[particiones][repeticiones];
-	int *masas_tableadas = (int*)calloc(alto*ancho, sizeof(int));
 	
 	//Medimos el tiempo que tarda el script en correr
 	clock_t begin = clock();
     int izquierda, arriba;
 	//Iteramos hasta p = 1
 
+    //Empezamos a percolar
+    printf("Percolando red cuadrada de %dx%d\n", alto, ancho);
+	char str[16384];
+	sprintf(str, "corridas/ej1d/ej1dbis%dx%d.txt", ancho, alto);
+    FILE *archivo;
+    archivo = fopen(str,"w");
+    
 	for(particion = 0; particion < particiones; particion++){
-
-        alto = ancho = l_inicial + particion;
         
-        //Empezamos a percolar
-        printf("Percolando red cuadrada de %dx%d\n", alto, ancho);
-
+        printf("%f\n", p);
         
         //int lattice[alto][ancho];
         //int clusters[alto][ancho];
@@ -121,6 +124,7 @@ int main(int argc, char **argv){
         int etiquetas[masa_total/2]; //Si tenemos un nodo ocupado y uno vacío tipo tablero de ajedrez, cada uno es un cluster y son la max cantidad de clusters posibles.
         int masas_de_clusters[masa_total/2]; 
 		//Comenzamos a realizar la red
+        int *masas_tableadas = (int*)calloc(alto*ancho, sizeof(int));
 
 		for(repeticion = 0; repeticion < repeticiones; repeticion++){
  			//Seteamos la semilla aleatoria correspondiente a ésta realización
@@ -206,23 +210,32 @@ int main(int argc, char **argv){
             
             int total_de_clusters = etiquetas_nuevas[0];
             free(etiquetas_nuevas);	
-            
+            /*
 			int tamano_cluster_percolante = 0;
 			for(i = 1; i <= total_de_clusters; i++){
 				if(masas_de_clusters[i] > tamano_cluster_percolante) tamano_cluster_percolante = masas_de_clusters[i];
             }
             
             for(i = 1; i <= total_de_clusters; i++){
-				//if(masas_de_clusters[i] < tamano_cluster_percolante) masas_tableadas[masas_de_clusters[i]]++;
-				masas_tableadas[masas_de_clusters[i]]++;
+				if(masas_de_clusters[i] < tamano_cluster_percolante) masas_tableadas[masas_de_clusters[i]]++;
+				//masas_tableadas[masas_de_clusters[i]]++;
             }
+            */
+            			
+			int *percolantes = calloc(sizeof(int), total_de_clusters+1);
+			verificar_percolacion(alto, ancho, clusters, percolantes);
+			
+			for(i = 1; i <= total_de_clusters; i++){
+				if(percolantes[i] == 1) masas_tableadas[masas_de_clusters[i]]++;
+			}
+			free(percolantes);
             
             //for(i = 1; i <= alto*ancho; i++){
 			//	if(masas_tableadas[i] > 0){
 			//		printf("%d %d\n", i, masas_tableadas[i]);
 			//	}
             //}          
-            if(repeticion%100 == 0) printf("%d\n", repeticion);
+            //if(repeticion%1000 == 0) printf("%d\n", repeticion);
 		}
 
 		for (i = 0; i < alto; i++) {
@@ -230,20 +243,19 @@ int main(int argc, char **argv){
 			free(lattice[i]);
 		}
 		free(clusters);
-		free(lattice);		
+		free(lattice);	
+        for(i = 2; i <= alto*ancho; i++){ //No guardo los de 1
+            if(masas_tableadas[i] > 0){
+                fprintf(archivo, "%f\t%d\t%d\n", p, i, masas_tableadas[i]);
+            }
+        }        
+        free(masas_tableadas);            
+        p = p + delta_p;
 	}
 	
-	char str[16384];
-	sprintf(str, "corridas/ej1d/ej1dbis.txt");
-    FILE *archivo;
-    archivo = fopen(str,"w");
-	for(i = 2; i <= alto*ancho; i++){ //No guardo los de 1
-		if(masas_tableadas[i] > 0){
-			fprintf(archivo, "%d\t%d\n", i, masas_tableadas[i]);
-		}
-	}
+
 	fclose(archivo);
-	free(masas_tableadas);    
+
 	//Mostramos el tiempo que tardó la corrida
 	clock_t end = clock();
 	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
@@ -480,13 +492,23 @@ void actualizar_etiquetas(int cantidad_etiquetas, int etiquetas[cantidad_etiquet
 }
 
 
+//Funcion que encuentra la masa de un determinado cluster
+int masa_cluster(int alto, int ancho, int clusters[alto][ancho], int cluster){
+    int x, y, masa = 0;
+    for(y = 0; y < alto; y++){
+        for(x = 0; x < ancho; x++){
+            if(clusters[y][x] == cluster) masa++;
+        }
+    }
+    return(masa);
+}
+
 //Verifica la existencia de cluster percolante
-int verificar_percolacion(int alto, int ancho, int clusters[alto][ancho]){
+int verificar_percolacion(int alto, int ancho, int **clusters, int *percolantes){
 	int x, y;
 	int indice_inicio = 0;
 	int indice_fin    = 0;
 	int posibles_percolantes[alto][2];
-	int percolantes[alto];
 	inicializar_lattice(alto, 2, posibles_percolantes, 0);
 	for(y = 0; y < alto; y++){
 		if(clusters[y][0] != 0){
@@ -501,20 +523,9 @@ int verificar_percolacion(int alto, int ancho, int clusters[alto][ancho]){
 	for(x = 0; x < indice_inicio; x++){
 		for(y = 0; y < indice_fin; y++){
 			if(posibles_percolantes[x][0] == posibles_percolantes[y][1]){
-				return(posibles_percolantes[x][0]);	
+				  percolantes[posibles_percolantes[x][0]] = 1;
 			}
 		}
 	}
 	return(0);
-}
-
-//Funcion que encuentra la masa de un determinado cluster
-int masa_cluster(int alto, int ancho, int clusters[alto][ancho], int cluster){
-    int x, y, masa = 0;
-    for(y = 0; y < alto; y++){
-        for(x = 0; x < ancho; x++){
-            if(clusters[y][x] == cluster) masa++;
-        }
-    }
-    return(masa);
 }
